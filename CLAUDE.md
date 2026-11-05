@@ -33,7 +33,8 @@ Chạy `nvm use` trước; repo ghim Node 24 và pnpm qua corepack.
 - Khoảng cách là bội số của 4; UI có đủ tiếng Việt và tiếng Anh
 - Test nằm cạnh code, tên theo mẫu "should … when …"; E2E nằm trong `e2e/`
 - Commits: một dòng, `feat(): …` / `bugfix(): …` / `refactor(): …` / `test(): …`
-- Branches: `feat/<short>` hoặc `fix/<short>`, merge qua pull request
+- Branches: `feat/<short>` hoặc `fix/<short>` tạo từ `dev`, merge vào `dev` qua pull request (`--base dev`)
+- Deploy: chỉ PR `dev` → `main` khi đưa lên production; merge vào `main` là deploy
 
 ## Workflow
 
@@ -44,7 +45,8 @@ Chạy `nvm use` trước; repo ghim Node 24 và pnpm qua corepack.
 ## Never
 
 - Never edit code or cut a branch before the plan is approved
-- Never push to main or force-push
+- Never push to main or dev, and never force-push
+- Never open a feature or fix PR straight into main
 - Never edit generated components in `src/components/ui`; wrap them instead
 - Never reset or rewrite shared seed data; test on a throwaway copy
 - Never skip or delete a failing test
