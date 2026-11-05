@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Git worktrees of parallel sessions hold their own build output.
+    ".claude/worktrees/**",
     "playwright-report/**",
     "test-results/**",
   ]),

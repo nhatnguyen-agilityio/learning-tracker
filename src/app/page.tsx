@@ -1,8 +1,10 @@
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { requireUserId } from "@/lib/auth/session";
 
 export default async function Home() {
+  await requireUserId();
   const t = await getTranslations("home");
 
   return (

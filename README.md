@@ -37,6 +37,25 @@ Seed có 2 user chỉ dùng ở local, để test đọc chéo: `user-a@example.
 
 Muốn tạo lại database từ đầu thì tự chạy `pnpm exec supabase db reset`. Lệnh này xoá dữ liệu local nên hook không cho Claude chạy. Sau khi `seed.sql` thay đổi cũng cần chạy lệnh này.
 
+### Đăng nhập
+
+App chỉ cho vào khi đã đăng nhập, nên `pnpm dev` cần `.env.local` và Supabase đang chạy. `pnpm test:e2e` cũng vậy: E2E đăng nhập bằng user seed qua `/test-sign-in`, Playwright tự bật cờ `TEST_SIGN_IN_ENABLED`. Không bật cờ này trong `.env.local` nếu định chạy `pnpm build`, vì build sẽ dừng.
+
+Đăng nhập Google ở local cần một OAuth client của riêng bạn:
+
+1. Trong Google Cloud Console, tạo OAuth client loại Web application.
+2. Thêm Authorized redirect URI: `http://127.0.0.1:54321/auth/v1/callback`.
+3. Tạo `supabase/.env` (đã bị git bỏ qua):
+
+   ```bash
+   SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID=
+   SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET=
+   ```
+
+4. Chạy `pnpm db:stop` rồi `pnpm db:start`.
+
+Mở app bằng `http://localhost:3000` hoặc `http://127.0.0.1:3000`, vì `supabase/config.toml` chỉ cho phép quay về hai địa chỉ này.
+
 ### Test với database
 
 `pnpm test` chạy cả các file `*.db.test.ts` trên database local, nên cần `pnpm db:start` trước; database chưa bật thì test fail. Mỗi test chạy trong một transaction rồi rollback, nên không để lại dữ liệu. Test chỉ chạy trên `127.0.0.1` hoặc `localhost`.

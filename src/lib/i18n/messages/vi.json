@@ -11,5 +11,10 @@
     "label": "Ngôn ngữ",
     "vi": "Tiếng Việt",
     "en": "English"
+  },
+  "signIn": {
+    "title": "Learning Tracker",
+    "google": "Đăng nhập bằng Google",
+    "error": "Không đăng nhập được bằng Google. Bạn thử lại nhé."
   }
 }
