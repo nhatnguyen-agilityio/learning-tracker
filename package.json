@@ -12,7 +12,10 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:status": "supabase status"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",
@@ -34,6 +37,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.4.5",
     "prettier": "^3.9.10",
+    "supabase": "^3.0.0",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^5.1.0"

@@ -24,6 +24,7 @@ Chạy `nvm use` trước; repo ghim Node 24 và pnpm qua corepack.
 - Test: `pnpm test` · E2E: `pnpm test:e2e`
 - Lint: `pnpm lint` · Types: `pnpm typecheck` · Format: `pnpm format`
 - Build: `pnpm build`
+- Database local: `pnpm db:start` · `pnpm db:status` · `pnpm db:stop` (cần Docker, xem README)
 
 ## Conventions
 
