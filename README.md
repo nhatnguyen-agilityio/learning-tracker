@@ -12,3 +12,29 @@ pnpm dev
 ```
 
 Các lệnh khác nằm trong `CLAUDE.md`. Lần đầu chạy E2E cần `pnpm exec playwright install chromium`.
+
+## Database ở local
+
+Cần Docker Desktop đang chạy. Lần đầu sẽ tải các image của Supabase, mất vài phút.
+
+```bash
+pnpm db:start
+pnpm db:status
+pnpm db:stop
+```
+
+`pnpm db:start` tạo database và chạy `supabase/seed.sql` nếu database còn trống. `pnpm db:stop` giữ nguyên dữ liệu.
+
+Tạo `.env.local` từ `.env.sample`, rồi lấy giá trị từ `pnpm exec supabase status -o env`:
+
+| Biến trong `.env.local`         | Giá trị trong `supabase status` |
+| ------------------------------- | ------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | `API_URL`                       |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `ANON_KEY`                      |
+| `DATABASE_URL`                  | `DB_URL`                        |
+
+Seed có 2 user chỉ dùng ở local, để test đọc chéo: `user-a@example.test` và `user-b@example.test`. Mật khẩu nằm trong `supabase/seed.sql`.
+
+Muốn tạo lại database từ đầu thì tự chạy `pnpm exec supabase db reset`. Lệnh này xoá dữ liệu local nên hook không cho Claude chạy. Sau khi `seed.sql` thay đổi cũng cần chạy lệnh này.
+
+Container `analytics` đang tắt trong `supabase/config.toml` vì không khởi động được ở local và app không dùng đến.
