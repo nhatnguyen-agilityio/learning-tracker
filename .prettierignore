@@ -1,0 +1,8 @@
+.next
+pnpm-lock.yaml
+SPEC.md
+AGENTS.md
+src/components/ui
+playwright-report
+test-results
+coverage
