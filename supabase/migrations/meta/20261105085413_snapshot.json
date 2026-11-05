@@ -1,6 +1,6 @@
 {
-  "id": "d50e87d1-bac0-49c7-9099-29be5deeef7f",
-  "prevId": "737c0303-df19-4300-b66c-a2f022acf23b",
+  "id": "0bcc2f3d-3e0e-4e4a-b618-7765b994cebe",
+  "prevId": "0c971448-83b7-4516-a961-bf77fa0580f8",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -188,19 +188,6 @@
         }
       },
       "foreignKeys": {
-        "card_schedules_card_id_cards_id_fk": {
-          "name": "card_schedules_card_id_cards_id_fk",
-          "tableFrom": "card_schedules",
-          "tableTo": "cards",
-          "columnsFrom": [
-            "card_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
         "card_schedules_user_id_users_id_fk": {
           "name": "card_schedules_user_id_users_id_fk",
           "tableFrom": "card_schedules",
@@ -211,6 +198,21 @@
           ],
           "columnsTo": [
             "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "card_schedules_card_fk": {
+          "name": "card_schedules_card_fk",
+          "tableFrom": "card_schedules",
+          "tableTo": "cards",
+          "columnsFrom": [
+            "card_id",
+            "user_id"
+          ],
+          "columnsTo": [
+            "id",
+            "user_id"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -355,22 +357,33 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "cards_resource_id_resources_id_fk": {
-          "name": "cards_resource_id_resources_id_fk",
+        "cards_resource_fk": {
+          "name": "cards_resource_fk",
           "tableFrom": "cards",
           "tableTo": "resources",
           "columnsFrom": [
-            "resource_id"
+            "resource_id",
+            "user_id"
           ],
           "columnsTo": [
-            "id"
+            "id",
+            "user_id"
           ],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "cards_id_user_id_unique": {
+          "name": "cards_id_user_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id",
+            "user_id"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": true
@@ -452,15 +465,17 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "notes_resource_id_resources_id_fk": {
-          "name": "notes_resource_id_resources_id_fk",
+        "notes_resource_fk": {
+          "name": "notes_resource_fk",
           "tableFrom": "notes",
           "tableTo": "resources",
           "columnsFrom": [
-            "resource_id"
+            "resource_id",
+            "user_id"
           ],
           "columnsTo": [
-            "id"
+            "id",
+            "user_id"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -496,6 +511,21 @@
         }
       },
       "indexes": {
+        "resource_topics_resource_id_idx": {
+          "name": "resource_topics_resource_id_idx",
+          "columns": [
+            {
+              "expression": "resource_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
         "resource_topics_topic_id_idx": {
           "name": "resource_topics_topic_id_idx",
           "columns": [
@@ -527,37 +557,42 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "resource_topics_resource_id_resources_id_fk": {
-          "name": "resource_topics_resource_id_resources_id_fk",
+        "resource_topics_resource_fk": {
+          "name": "resource_topics_resource_fk",
           "tableFrom": "resource_topics",
           "tableTo": "resources",
           "columnsFrom": [
-            "resource_id"
+            "resource_id",
+            "user_id"
           ],
           "columnsTo": [
-            "id"
+            "id",
+            "user_id"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "resource_topics_topic_id_topics_id_fk": {
-          "name": "resource_topics_topic_id_topics_id_fk",
+        "resource_topics_topic_fk": {
+          "name": "resource_topics_topic_fk",
           "tableFrom": "resource_topics",
           "tableTo": "topics",
           "columnsFrom": [
-            "topic_id"
+            "topic_id",
+            "user_id"
           ],
           "columnsTo": [
-            "id"
+            "id",
+            "user_id"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
-        "resource_topics_resource_id_topic_id_pk": {
-          "name": "resource_topics_resource_id_topic_id_pk",
+        "resource_topics_user_id_resource_id_topic_id_pk": {
+          "name": "resource_topics_user_id_resource_id_topic_id_pk",
           "columns": [
+            "user_id",
             "resource_id",
             "topic_id"
           ]
@@ -708,7 +743,16 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "resources_id_user_id_unique": {
+          "name": "resources_id_user_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id",
+            "user_id"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {
         "resources_progress_range": {
@@ -839,19 +883,6 @@
         }
       },
       "foreignKeys": {
-        "reviews_card_id_cards_id_fk": {
-          "name": "reviews_card_id_cards_id_fk",
-          "tableFrom": "reviews",
-          "tableTo": "cards",
-          "columnsFrom": [
-            "card_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
         "reviews_user_id_users_id_fk": {
           "name": "reviews_user_id_users_id_fk",
           "tableFrom": "reviews",
@@ -862,6 +893,21 @@
           ],
           "columnsTo": [
             "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "reviews_card_fk": {
+          "name": "reviews_card_fk",
+          "tableFrom": "reviews",
+          "tableTo": "cards",
+          "columnsFrom": [
+            "card_id",
+            "user_id"
+          ],
+          "columnsTo": [
+            "id",
+            "user_id"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -937,7 +983,16 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "topics_id_user_id_unique": {
+          "name": "topics_id_user_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id",
+            "user_id"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": true

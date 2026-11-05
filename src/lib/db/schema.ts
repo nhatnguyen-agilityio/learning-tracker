@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import {
   check,
   doublePrecision,
+  foreignKey,
   index,
   integer,
   jsonb,
@@ -11,6 +12,7 @@ import {
   smallint,
   text,
   timestamp,
+  unique,
   uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
@@ -18,6 +20,10 @@ import { authUsers } from "drizzle-orm/supabase";
 
 // Every table has RLS on with no policies. That closes Supabase's public API;
 // the app reaches data only through `src/domain`, which requires a userId.
+//
+// Links between a user's rows are composite foreign keys on (id, user_id), so
+// the database refuses a row that points at another user's data, even if a
+// domain function forgets to check ownership.
 
 const id = () => uuid("id").primaryKey().defaultRandom();
 const userId = () =>
@@ -60,7 +66,10 @@ export const topics = pgTable(
     name: text("name").notNull(),
     color: text("color").notNull(),
   },
-  (table) => [index("topics_user_id_idx").on(table.userId)],
+  (table) => [
+    unique("topics_id_user_id_unique").on(table.id, table.userId),
+    index("topics_user_id_idx").on(table.userId),
+  ],
 ).enableRLS();
 
 export const resources = pgTable(
@@ -79,6 +88,7 @@ export const resources = pgTable(
     updatedAt: updatedAt(),
   },
   (table) => [
+    unique("resources_id_user_id_unique").on(table.id, table.userId),
     uniqueIndex("resources_user_id_normalized_url_idx").on(
       table.userId,
       table.normalizedUrl,
@@ -92,15 +102,22 @@ export const resourceTopics = pgTable(
   "resource_topics",
   {
     userId: userId(),
-    resourceId: uuid("resource_id")
-      .notNull()
-      .references(() => resources.id, { onDelete: "cascade" }),
-    topicId: uuid("topic_id")
-      .notNull()
-      .references(() => topics.id, { onDelete: "cascade" }),
+    resourceId: uuid("resource_id").notNull(),
+    topicId: uuid("topic_id").notNull(),
   },
   (table) => [
-    primaryKey({ columns: [table.resourceId, table.topicId] }),
+    primaryKey({ columns: [table.userId, table.resourceId, table.topicId] }),
+    foreignKey({
+      name: "resource_topics_resource_fk",
+      columns: [table.resourceId, table.userId],
+      foreignColumns: [resources.id, resources.userId],
+    }).onDelete("cascade"),
+    foreignKey({
+      name: "resource_topics_topic_fk",
+      columns: [table.topicId, table.userId],
+      foreignColumns: [topics.id, topics.userId],
+    }).onDelete("cascade"),
+    index("resource_topics_resource_id_idx").on(table.resourceId),
     index("resource_topics_topic_id_idx").on(table.topicId),
   ],
 ).enableRLS();
@@ -110,14 +127,19 @@ export const notes = pgTable(
   {
     id: id(),
     userId: userId(),
-    resourceId: uuid("resource_id")
-      .notNull()
-      .references(() => resources.id, { onDelete: "cascade" }),
+    resourceId: uuid("resource_id").notNull(),
     contentMd: text("content_md").notNull().default(""),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
-  (table) => [index("notes_resource_id_idx").on(table.resourceId)],
+  (table) => [
+    foreignKey({
+      name: "notes_resource_fk",
+      columns: [table.resourceId, table.userId],
+      foreignColumns: [resources.id, resources.userId],
+    }).onDelete("cascade"),
+    index("notes_resource_id_idx").on(table.resourceId),
+  ],
 ).enableRLS();
 
 export const cards = pgTable(
@@ -125,10 +147,7 @@ export const cards = pgTable(
   {
     id: id(),
     userId: userId(),
-    // Set to null when the resource is deleted, so the card survives.
-    resourceId: uuid("resource_id").references(() => resources.id, {
-      onDelete: "set null",
-    }),
+    resourceId: uuid("resource_id"),
     type: cardType("type").notNull().default("qa"),
     front: text("front").notNull(),
     back: text("back").notNull(),
@@ -139,6 +158,15 @@ export const cards = pgTable(
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
   },
   (table) => [
+    unique("cards_id_user_id_unique").on(table.id, table.userId),
+    // The migration narrows this by hand to ON DELETE SET NULL ("resource_id"),
+    // which Drizzle can't express. A plain SET NULL would also clear the
+    // NOT NULL user_id. Keep that edit if this key is ever regenerated.
+    foreignKey({
+      name: "cards_resource_fk",
+      columns: [table.resourceId, table.userId],
+      foreignColumns: [resources.id, resources.userId],
+    }).onDelete("set null"),
     index("cards_user_id_status_idx").on(table.userId, table.status),
     index("cards_resource_id_idx").on(table.resourceId),
   ],
@@ -147,9 +175,7 @@ export const cards = pgTable(
 export const cardSchedules = pgTable(
   "card_schedules",
   {
-    cardId: uuid("card_id")
-      .primaryKey()
-      .references(() => cards.id, { onDelete: "cascade" }),
+    cardId: uuid("card_id").primaryKey(),
     userId: userId(),
     due: timestamp("due", { withTimezone: true }).notNull(),
     stability: doublePrecision("stability").notNull().default(0),
@@ -161,6 +187,11 @@ export const cardSchedules = pgTable(
     lastReview: timestamp("last_review", { withTimezone: true }),
   },
   (table) => [
+    foreignKey({
+      name: "card_schedules_card_fk",
+      columns: [table.cardId, table.userId],
+      foreignColumns: [cards.id, cards.userId],
+    }).onDelete("cascade"),
     index("card_schedules_user_id_due_idx").on(table.userId, table.due),
   ],
 ).enableRLS();
@@ -169,9 +200,7 @@ export const reviews = pgTable(
   "reviews",
   {
     id: id(),
-    cardId: uuid("card_id")
-      .notNull()
-      .references(() => cards.id, { onDelete: "cascade" }),
+    cardId: uuid("card_id").notNull(),
     userId: userId(),
     rating: smallint("rating").notNull(),
     reviewedAt: timestamp("reviewed_at", { withTimezone: true })
@@ -183,6 +212,11 @@ export const reviews = pgTable(
     prevSchedule: jsonb("prev_schedule").notNull(),
   },
   (table) => [
+    foreignKey({
+      name: "reviews_card_fk",
+      columns: [table.cardId, table.userId],
+      foreignColumns: [cards.id, cards.userId],
+    }).onDelete("cascade"),
     uniqueIndex("reviews_user_id_idempotency_key_idx").on(
       table.userId,
       table.idempotencyKey,

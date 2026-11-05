@@ -140,7 +140,7 @@ App cung cấp MCP server để Claude đọc dữ liệu và tạo thẻ. Việ
 
 ## Data model sơ bộ
 
-Mọi bảng có `user_id`. Tầng `domain` là lớp phân quyền chính: mọi hàm truy vấn bắt buộc nhận `userId`, và có test chặn đọc chéo giữa hai user. RLS bật trên mọi bảng nhưng không có policy, để khoá đường truy cập qua API công khai của Supabase.
+Mọi bảng có `user_id`. Tầng `domain` là lớp phân quyền chính: mọi hàm truy vấn bắt buộc nhận `userId`, và có test chặn đọc chéo giữa hai user. RLS bật trên mọi bảng nhưng không có policy, để khoá đường truy cập qua API công khai của Supabase. Liên kết giữa các bảng dùng khoá ngoại ghép `(id, user_id)`, nên database từ chối dòng trỏ sang dữ liệu của user khác.
 
 | Bảng | Field chính | Ghi chú |
 | --- | --- | --- |
