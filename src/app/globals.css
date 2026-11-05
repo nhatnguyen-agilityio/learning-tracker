@@ -1,0 +1,150 @@
+@import "tailwindcss";
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+/* Nguồn: design system Learning Tracker, artboard 03. */
+:root {
+  --background: #fcfaf5;
+  --foreground: #1e1c18;
+  --card: #ffffff;
+  --card-foreground: #1e1c18;
+  --popover: #ffffff;
+  --popover-foreground: #1e1c18;
+  --primary: #3b8048;
+  --primary-foreground: #ffffff;
+  --primary-hover: #2f6b3a;
+  --primary-soft: #f0f8ef;
+  --primary-soft-foreground: #2f6b3a;
+  --secondary: #f5f2eb;
+  --secondary-foreground: #1e1c18;
+  --muted: #f5f2eb;
+  --muted-foreground: #565146;
+  --accent: #f5f2eb;
+  --accent-foreground: #1e1c18;
+  --destructive: #be2c2c;
+  --destructive-foreground: #ffffff;
+  --destructive-hover: #9a2323;
+  --destructive-soft: #fdeeee;
+  --destructive-soft-foreground: #9a2323;
+  --success: #0d7c78;
+  --success-foreground: #ffffff;
+  --success-soft: #e6f6f5;
+  --success-soft-foreground: #0a6461;
+  --warning: #8c5600;
+  --warning-foreground: #ffffff;
+  --warning-soft: #fef6e7;
+  --warning-soft-foreground: #8c5600;
+  --border: #eae6dd;
+  --border-strong: #cfc9bd;
+  --input: #8c8678;
+  --input-hover: #736d60;
+  --ring: #4a9455;
+  --disabled: #f5f2eb;
+  --disabled-foreground: #6a6458;
+  --code: #f7f5ef;
+  --code-foreground: #1e1c18;
+  --radius: 8px;
+}
+
+[data-theme="dark"] {
+  --background: #141310;
+  --foreground: #f5f2eb;
+  --card: #1e1c18;
+  --card-foreground: #f5f2eb;
+  --popover: #25231e;
+  --popover-foreground: #f5f2eb;
+  --primary: #9ccd99;
+  --primary-foreground: #122a18;
+  --primary-hover: #bddfba;
+  --primary-soft: #204529;
+  --primary-soft-foreground: #bddfba;
+  --secondary: #2d2a24;
+  --secondary-foreground: #f5f2eb;
+  --muted: #2d2a24;
+  --muted-foreground: #aba598;
+  --accent: #2d2a24;
+  --accent-foreground: #f5f2eb;
+  --destructive: #f19c9c;
+  --destructive-foreground: #2b0b0b;
+  --destructive-hover: #fad9d9;
+  --destructive-soft: #5c1717;
+  --destructive-soft-foreground: #f19c9c;
+  --success: #62cbc6;
+  --success-foreground: #083f3d;
+  --success-soft: #083f3d;
+  --success-soft-foreground: #62cbc6;
+  --warning: #f5c15a;
+  --warning-foreground: #533300;
+  --warning-soft: #533300;
+  --warning-soft-foreground: #f5c15a;
+  --border: #332f28;
+  --border-strong: #403c33;
+  --input: #736d60;
+  --input-hover: #8c8678;
+  --ring: #9ccd99;
+  --disabled: #2d2a24;
+  --disabled-foreground: #8c8678;
+  --code: #0f0e0c;
+  --code-foreground: #eae6dd;
+}
+
+@theme inline {
+  --font-sans: var(--font-be-vietnam-pro), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+  --color-primary-soft-foreground: var(--primary-soft-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-hover: var(--destructive-hover);
+  --color-destructive-soft: var(--destructive-soft);
+  --color-destructive-soft-foreground: var(--destructive-soft-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-soft: var(--success-soft);
+  --color-success-soft-foreground: var(--success-soft-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-soft-foreground: var(--warning-soft-foreground);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-input: var(--input);
+  --color-input-hover: var(--input-hover);
+  --color-ring: var(--ring);
+  --color-disabled: var(--disabled);
+  --color-disabled-foreground: var(--disabled-foreground);
+  --color-code: var(--code);
+  --color-code-foreground: var(--code-foreground);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    background: var(--background);
+    color: var(--foreground);
+  }
+}
