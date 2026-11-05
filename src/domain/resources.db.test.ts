@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
-import { expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { resources } from "@/lib/db/schema";
-import { describeWithDb, SEEDED_USERS, withTestDb } from "@/lib/db/test-db";
+import { SEEDED_USERS, withTestDb } from "@/lib/db/test-db";
 import type { Db } from "@/lib/db/types";
 import { getResource, listResources } from "./resources";
 
@@ -16,7 +16,7 @@ async function addResource(db: Db, userId: string, title: string) {
   return row.id;
 }
 
-describeWithDb("reading resources across users", () => {
+describe("reading resources across users", () => {
   it("should return only the user's own resources when both users have resources", () =>
     withTestDb(async (db) => {
       const ownId = await addResource(db, userA, "from-a");

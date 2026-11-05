@@ -3,7 +3,6 @@ import { TransactionRollbackError } from "drizzle-orm/errors";
 import { drizzle } from "drizzle-orm/postgres-js";
 import { authUsers } from "drizzle-orm/supabase";
 import postgres from "postgres";
-import { describe } from "vitest";
 import * as schema from "./schema";
 import type { Db } from "./types";
 
@@ -16,9 +15,6 @@ export const SEEDED_USERS = {
   a: "00000000-0000-4000-8000-00000000000a",
   b: "00000000-0000-4000-8000-00000000000b",
 } as const;
-
-/** CI has no database, so these tests run locally only. Locally they never skip. */
-export const describeWithDb = describe.skipIf(Boolean(process.env.CI));
 
 export function assertLocalDatabaseUrl(url: string) {
   const { hostname } = new URL(url);

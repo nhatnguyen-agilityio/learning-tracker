@@ -47,7 +47,7 @@ Tầng `domain` là lớp phân quyền duy nhất: app kết nối bằng role 
 - Dòng của user khác trả về như dòng không tồn tại (`null`), không báo lỗi riêng
 - Chọn cột cần trả, không `select *`
 - Không đọc `process.env`, cookie hay `next/*` trong `src/domain`; nếu tầng gọi dùng `"use cache"`, truyền `userId` qua tham số
-- Mỗi hàm có test đọc chéo trong `*.db.test.ts`, dùng `describeWithDb` và `withTestDb` từ `src/lib/db/test-db.ts`. `withTestDb` luôn rollback, nên không đổi seed. CI không có database nên bỏ qua các test này: phải chạy `pnpm test` ở local trước khi mở PR
+- Mỗi hàm có test đọc chéo trong `*.db.test.ts`, dùng `withTestDb` từ `src/lib/db/test-db.ts`. `withTestDb` luôn rollback, nên không đổi seed. CI chạy các test này trên Supabase local, nên thiếu filter `userId` là CI đỏ
 
 ## Workflow
 

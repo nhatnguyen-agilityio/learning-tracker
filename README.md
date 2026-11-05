@@ -41,7 +41,7 @@ Muốn tạo lại database từ đầu thì tự chạy `pnpm exec supabase db 
 
 `pnpm test` chạy cả các file `*.db.test.ts` trên database local, nên cần `pnpm db:start` trước; database chưa bật thì test fail. Mỗi test chạy trong một transaction rồi rollback, nên không để lại dữ liệu. Test chỉ chạy trên `127.0.0.1` hoặc `localhost`.
 
-CI chưa có database nên bỏ qua các test này (`CI=true`), vì vậy cần chạy `pnpm test` ở local trước khi mở PR.
+CI cũng chạy các test này: workflow bật Postgres của Supabase bằng `pnpm exec supabase db start`, gồm migration và `supabase/seed.sql`, rồi mới chạy `pnpm test`.
 
 ### Đổi schema
 
