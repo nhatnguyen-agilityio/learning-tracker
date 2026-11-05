@@ -11,7 +11,7 @@ Web app cho người tự học: gom nguồn học, ghi chú và thẻ ôn vào 
 - Spec: `SPEC.md`. Khi có quyết định mới về flow, dữ liệu hay phạm vi, cập nhật cả `SPEC.md` và PRD.
 - PRD: https://claude.ai/artifact/Su4HPs68ZmL3RkB8cMyctc
 - Design system và prototype: https://claude.ai/artifact/NYLS4XYntxLFmtp5snMb2o
-- Ticket: Trello https://trello.com/b/builyI19/learning-tracker (Backlog, Đang làm, Review, Xong)
+- Ticket: Trello https://trello.com/b/builyI19/learning-tracker (Backlog, In Progress, Review, Done)
 
 Prototype là bản giả lập để tham khảo UI và flow, không chép code của nó.
 
