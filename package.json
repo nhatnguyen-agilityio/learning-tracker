@@ -15,12 +15,15 @@
     "format:check": "prettier --check .",
     "db:start": "supabase start",
     "db:stop": "supabase stop",
-    "db:status": "supabase status"
+    "db:status": "supabase status",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "supabase migration up"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cn": "^0.5.2",
+    "drizzle-orm": "0.45.4",
     "lucide-react": "^1.68.0",
     "next": "16.4.5",
     "radix-ui": "^1.8.1",
@@ -34,6 +37,7 @@
     "@types/node": "^24.19.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "drizzle-kit": "0.31.11",
     "eslint": "^9",
     "eslint-config-next": "16.4.5",
     "prettier": "^3.9.10",

@@ -37,4 +37,13 @@ Seed có 2 user chỉ dùng ở local, để test đọc chéo: `user-a@example.
 
 Muốn tạo lại database từ đầu thì tự chạy `pnpm exec supabase db reset`. Lệnh này xoá dữ liệu local nên hook không cho Claude chạy. Sau khi `seed.sql` thay đổi cũng cần chạy lệnh này.
 
+### Đổi schema
+
+1. Sửa `src/lib/db/schema.ts`. Bảng mới phải có `.enableRLS()`, không tạo policy.
+2. `pnpm db:generate --name=<ten_thay_doi>` sinh migration vào `supabase/migrations`.
+3. Đọc lại file SQL vừa sinh.
+4. `pnpm db:migrate` áp dụng vào database local.
+
+Migration đã merge thì không sửa lại; thay đổi tiếp theo là một migration mới.
+
 Container `analytics` đang tắt trong `supabase/config.toml` vì không khởi động được ở local và app không dùng đến.

@@ -145,7 +145,7 @@ Mọi bảng có `user_id`. Tầng `domain` là lớp phân quyền chính: mọ
 | Bảng | Field chính | Ghi chú |
 | --- | --- | --- |
 | `topics` | id, user_id, name, color | Chủ đề người dùng tự tạo |
-| `resources` | id, user_id, url, title, type, thumbnail_url, status, progress (0–100), created_at, updated_at | type: article / video / course / doc / other; status: want / learning / done; cảnh báo trùng theo user_id + url đã chuẩn hoá |
+| `resources` | id, user_id, url, normalized_url, title, type, thumbnail_url, status, progress (0–100), created_at, updated_at | type: article / video / course / doc / other; status: want / learning / done; `url` giữ link gốc; cảnh báo trùng theo user_id + normalized_url |
 | `resource_topics` | user_id, resource_id, topic_id | Nhiều–nhiều |
 | `notes` | id, user_id, resource_id, content_md, created_at, updated_at | Một nguồn có nhiều ghi chú |
 | `cards` | id, user_id, resource_id?, type, front, back, extra (jsonb), status, source, created_at, deleted_at | status: pending / active / suspended; source: manual / mcp; deleted_at: xoá mềm thẻ đã ôn |
