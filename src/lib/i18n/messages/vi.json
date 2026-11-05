@@ -1,0 +1,15 @@
+{
+  "metadata": {
+    "title": "Learning Tracker",
+    "description": "Gom nguồn học, ghi chú và thẻ ôn vào một luồng, rồi ôn đúng lúc sắp quên."
+  },
+  "home": {
+    "title": "Learning Tracker",
+    "tagline": "Gom nguồn học, ghi chú và thẻ ôn vào một luồng, rồi ôn đúng lúc sắp quên."
+  },
+  "language": {
+    "label": "Ngôn ngữ",
+    "vi": "Tiếng Việt",
+    "en": "English"
+  }
+}
