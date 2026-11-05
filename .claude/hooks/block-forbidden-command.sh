@@ -13,12 +13,15 @@ cmd=$(jq -er '.tool_input.command' 2>/dev/null) || block "the command couldn't b
 reason=$(python3 -I -c '
 import os, re, sys
 
-# Quotes are dropped first, so commands nested in bash -c or eval are still seen.
-cmd = re.sub(r"[\"\x27]", "", sys.argv[1].replace("\\\n", " "))
+# Escapes and quotes are dropped first, so commands nested in bash -c or eval are
+# still seen. Redirections go too, because their & is not a command separator.
+cmd = re.sub(r"\\(.)", r"\1", sys.argv[1].replace("\\\n", " "))
+cmd = re.sub(r"[\"\x27]", "", cmd)
+cmd = re.sub(r"\d*[<>]&[\d-]*|&>>?", " ", cmd)
 HOME_TARGET = re.compile(r"^(/|/\*|~|~/|~/\*|\$HOME|\$\{HOME\})/?\*?$")
 RULES = [
-    (r"\bdrop\s+database\b", "dropping a database is run by hand. Ask the user."),
-    (r"\bsupabase\b[^;&|\n]*\sdb\s+reset\b", "database resets are run by hand. Ask the user."),
+    (r"\bdrop\s+database", "dropping a database is run by hand. Ask the user."),
+    (r"\bsupabase\b[^;&|\n]*\sdb\s+reset", "database resets are run by hand. Ask the user."),
     (r"db:migrate:prod", "production migrations are run by hand. Ask the user."),
     (r"\bvercel\b[^;&|\n]*\s--prod\b", "production deploys go through a merge to main."),
 ]
