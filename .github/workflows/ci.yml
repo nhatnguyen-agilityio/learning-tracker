@@ -19,5 +19,6 @@ jobs:
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck
+      - run: pnpm exec supabase db start
       - run: pnpm test
       - run: pnpm build
