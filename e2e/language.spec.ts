@@ -1,10 +1,11 @@
 import { expect, test } from "@playwright/test";
+import { signIn } from "./sign-in";
 
 const viTagline = /Gom nguồn học/;
 const enTagline = /Bring your learning sources/;
 
 test("should keep the URL when changing the language", async ({ page }) => {
-  await page.goto("/");
+  await signIn(page);
   const url = page.url();
   await expect(page.getByText(enTagline)).toBeVisible();
 
@@ -18,7 +19,7 @@ test("should keep the URL when changing the language", async ({ page }) => {
 test("should remember the language when reloading the page", async ({
   page,
 }) => {
-  await page.goto("/");
+  await signIn(page);
   await page.getByRole("button", { name: "Tiếng Việt" }).click();
   await expect(page.getByText(viTagline)).toBeVisible();
 
@@ -34,7 +35,7 @@ test.describe("when the browser prefers Vietnamese", () => {
   test("should show Vietnamese when there is no language cookie", async ({
     page,
   }) => {
-    await page.goto("/");
+    await signIn(page);
     await expect(page.getByText(viTagline)).toBeVisible();
   });
 });

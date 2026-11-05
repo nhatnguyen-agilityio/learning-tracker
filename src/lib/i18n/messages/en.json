@@ -11,5 +11,10 @@
     "label": "Language",
     "vi": "Tiếng Việt",
     "en": "English"
+  },
+  "signIn": {
+    "title": "Learning Tracker",
+    "google": "Sign in with Google",
+    "error": "We couldn't sign you in with Google. Please try again."
   }
 }

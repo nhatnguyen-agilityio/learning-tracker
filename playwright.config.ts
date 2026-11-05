@@ -10,5 +10,6 @@ export default defineConfig({
     command: `pnpm dev --port ${port}`,
     url: `http://localhost:${port}`,
     reuseExistingServer: !process.env.CI,
+    env: { TEST_SIGN_IN_ENABLED: "true" },
   },
 });
