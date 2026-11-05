@@ -4,18 +4,6 @@ export type AppLocale = (typeof locales)[number];
 
 export const LOCALE_COOKIE = "locale";
 
-const ONE_YEAR_IN_SECONDS = 60 * 60 * 24 * 365;
-
-export function localeCookieOptions() {
-  return {
-    path: "/",
-    maxAge: ONE_YEAR_IN_SECONDS,
-    sameSite: "lax",
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-  } as const;
-}
-
 export function isLocale(value: unknown): value is AppLocale {
   return locales.some((locale) => locale === value);
 }

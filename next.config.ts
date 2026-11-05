@@ -8,6 +8,8 @@ const withNextIntl = createNextIntlPlugin("./src/lib/i18n/request.ts");
 const nextConfig: NextConfig = {
   /* config options here */
   cacheComponents: true,
+  // The default corner covers the first item of the mobile bottom bar.
+  devIndicators: { position: "top-right" },
   partialPrefetching: true,
   turbopack: {
     rules: {

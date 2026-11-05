@@ -1,17 +1,25 @@
-import { expect, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 import { signIn } from "./sign-in";
 
-const viTagline = /Gom nguồn học/;
-const enTagline = /Bring your learning sources/;
+const viSignInText = /Gom nguồn học/;
+const englishHeading = (page: Page) =>
+  page.getByRole("heading", { name: "Settings" });
+const vietnameseHeading = (page: Page) =>
+  page.getByRole("heading", { name: "Cài đặt" });
+
+async function openSettings(page: Page) {
+  await signIn(page);
+  await page.goto("/settings");
+}
 
 test("should keep the URL when changing the language", async ({ page }) => {
-  await signIn(page);
+  await openSettings(page);
   const url = page.url();
-  await expect(page.getByText(enTagline)).toBeVisible();
+  await expect(englishHeading(page)).toBeVisible();
 
   await page.getByRole("button", { name: "Tiếng Việt" }).click();
 
-  await expect(page.getByText(viTagline)).toBeVisible();
+  await expect(vietnameseHeading(page)).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("lang", "vi");
   expect(page.url()).toBe(url);
 });
@@ -19,13 +27,13 @@ test("should keep the URL when changing the language", async ({ page }) => {
 test("should remember the language when reloading the page", async ({
   page,
 }) => {
-  await signIn(page);
+  await openSettings(page);
   await page.getByRole("button", { name: "Tiếng Việt" }).click();
-  await expect(page.getByText(viTagline)).toBeVisible();
+  await expect(vietnameseHeading(page)).toBeVisible();
 
   await page.reload();
 
-  await expect(page.getByText(viTagline)).toBeVisible();
+  await expect(vietnameseHeading(page)).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("lang", "vi");
 });
 
@@ -36,6 +44,6 @@ test.describe("when the browser prefers Vietnamese", () => {
     page,
   }) => {
     await page.goto("/sign-in");
-    await expect(page.getByText(viTagline)).toBeVisible();
+    await expect(page.getByText(viSignInText)).toBeVisible();
   });
 });
