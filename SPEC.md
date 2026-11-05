@@ -77,7 +77,7 @@ Các chỉ số tính bằng SQL từ bảng `reviews`.
 
 ### F9 — Cài đặt và tài khoản
 
-1. Trong Settings, đổi thẻ mới/ngày, múi giờ, ngôn ngữ, quản lý chủ đề
+1. Trong Settings, đổi thẻ mới/ngày, múi giờ, ngôn ngữ, giao diện sáng/tối, quản lý chủ đề
 2. Xuất dữ liệu: tải file JSON chứa toàn bộ dữ liệu của mình
 3. Xoá tài khoản: xác nhận → xoá toàn bộ dữ liệu của tài khoản
 4. Đăng xuất: về màn Đăng nhập, dữ liệu vẫn giữ nguyên
@@ -94,7 +94,7 @@ Các chỉ số tính bằng SQL từ bảng `reviews`.
 | Ôn tập | Ôn thẻ đến hạn | Thẻ hiện tại, số thẻ còn lại | Lật, chấm 3 mức, hoàn tác, thoát | F6 |
 | Tổng kết phiên ôn | Phản hồi sau khi ôn | Số thẻ, tỷ lệ nhớ, streak | Ôn tiếp, về Today | F6 |
 | Thẻ | Quản lý thẻ | Danh sách thẻ, tab "Chờ duyệt" | Sửa, duyệt, duyệt tất cả theo nguồn, xoá, tạm ngưng thẻ | F4, F5, F8 |
-| Settings | Cấu hình | Thẻ mới/ngày, múi giờ, ngôn ngữ, chủ đề, API token | Đổi cài đặt, quản lý chủ đề, tạo/thu hồi token, xem hướng dẫn MCP, xuất dữ liệu, đăng xuất, xoá tài khoản | F5, F9 |
+| Settings | Cấu hình | Thẻ mới/ngày, múi giờ, ngôn ngữ, giao diện, chủ đề, API token | Đổi cài đặt, quản lý chủ đề, tạo/thu hồi token, xem hướng dẫn MCP, xuất dữ liệu, đăng xuất, xoá tài khoản | F5, F9 |
 | Điều khoản và Quyền riêng tư | Công bố cách dùng dữ liệu | Nội dung tĩnh, 2 ngôn ngữ | Đọc, về màn trước | F1 |
 
 **Trạng thái cần thiết kế cho mỗi màn:** trống (lần đầu), đang tải, lỗi, dữ liệu dài. Mọi màn có light/dark và đủ 2 ngôn ngữ. Màn Ôn tập và Today ưu tiên mobile.
@@ -162,7 +162,7 @@ Mọi bảng có `user_id`. Tầng `domain` là lớp phân quyền chính: mọ
 - **Phân quyền:** ở tầng `domain`; bật RLS không policy trên mọi bảng; API token lưu hash; không lưu nội dung trang của link, chỉ metadata
 - **Nền tảng:** web responsive; màn Ôn tập và Today thiết kế mobile-first
 - **Hiệu năng:** chuyển thẻ dưới 200 ms: đặt server ở Singapore, tải trước lô thẻ, gửi lượt chấm nền qua Route Handler với hàng đợi trong `localStorage` và khoá chống trùng
-- **Trải nghiệm:** phím tắt khi ôn (Space lật, 1/2/3 chấm, Z hoàn tác); dark mode; ghi chú tự lưu
+- **Trải nghiệm:** phím tắt khi ôn (Space lật, 1/2/3 chấm, Z hoàn tác); dark mode chọn Sáng/Tối trong Settings, lưu theo trình duyệt, mặc định Sáng; ghi chú tự lưu
 - **Ngôn ngữ:** tiếng Việt và tiếng Anh qua `next-intl`, không đưa ngôn ngữ vào URL; lưu ở `user_settings.locale` và cookie. Dịch giao diện, thông báo lỗi, trang Điều khoản và hướng dẫn MCP; không dịch nội dung người dùng. Có test báo lỗi khi hai file ngôn ngữ lệch key. Root layout đọc ngôn ngữ từ cookie để đặt `<html lang>`, nên đặt `instant = false` và mọi route chờ server; code trong `"use cache"` nhận ngôn ngữ qua tham số
 - **Chống lạm dụng:** khi tải link chỉ nhận http và https, chặn IP nội bộ, kiểm tra lại sau mỗi lần redirect, timeout 5 giây, đọc tối đa 1 MB. Rate limit theo user, lưu bằng Postgres. Hạn mức mỗi tài khoản: 2.000 nguồn, 10.000 thẻ, 100 KB mỗi ghi chú
 - **Tìm kiếm:** trong tiêu đề, URL và ghi chú, không phân biệt dấu tiếng Việt (`unaccent` và `pg_trgm`); Library và MCP dùng chung một hàm

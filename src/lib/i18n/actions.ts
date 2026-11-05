@@ -1,10 +1,11 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { isLocale, LOCALE_COOKIE, localeCookieOptions } from "./locale";
+import { preferenceCookieOptions } from "@/lib/preference-cookie";
+import { isLocale, LOCALE_COOKIE } from "./locale";
 
 export async function setLocale(locale: string) {
   if (!isLocale(locale)) return;
 
-  (await cookies()).set(LOCALE_COOKIE, locale, localeCookieOptions());
+  (await cookies()).set(LOCALE_COOKIE, locale, preferenceCookieOptions());
 }

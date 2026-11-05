@@ -3,10 +3,6 @@
     "title": "Learning Tracker",
     "description": "Gom nguồn học, ghi chú và thẻ ôn vào một luồng, rồi ôn đúng lúc sắp quên."
   },
-  "home": {
-    "title": "Learning Tracker",
-    "tagline": "Gom nguồn học, ghi chú và thẻ ôn vào một luồng, rồi ôn đúng lúc sắp quên."
-  },
   "language": {
     "label": "Ngôn ngữ",
     "vi": "Tiếng Việt",
@@ -21,5 +17,19 @@
     "error": "Không đăng nhập được bằng Google. Bạn thử lại nhé.",
     "terms": "Điều khoản",
     "privacy": "Quyền riêng tư"
+  },
+  "nav": {
+    "label": "Điều hướng chính",
+    "brand": "Learning Tracker",
+    "today": "Today",
+    "library": "Library",
+    "cards": "Thẻ",
+    "settings": "Cài đặt"
+  },
+  "settings": {
+    "language": "Ngôn ngữ",
+    "appearance": "Giao diện",
+    "light": "Sáng",
+    "dark": "Tối"
   }
 }

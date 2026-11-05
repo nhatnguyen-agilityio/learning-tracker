@@ -24,9 +24,7 @@ test("should keep the target page when redirecting to sign-in", async ({
 test("should open the home page when signed in", async ({ page }) => {
   await signIn(page);
 
-  await expect(
-    page.getByRole("heading", { name: "Learning Tracker" }),
-  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Today" })).toBeVisible();
 });
 
 test("should leave the sign-in page when already signed in", async ({

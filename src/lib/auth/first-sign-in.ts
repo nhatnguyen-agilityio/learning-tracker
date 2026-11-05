@@ -2,12 +2,8 @@ import { cookies, headers } from "next/headers";
 import { resolveTimezone } from "@/domain/timezone";
 import { ensureUserSettings } from "@/domain/user-settings";
 import { getDb } from "@/lib/db/client";
-import {
-  isLocale,
-  LOCALE_COOKIE,
-  localeCookieOptions,
-  resolveLocale,
-} from "@/lib/i18n/locale";
+import { isLocale, LOCALE_COOKIE, resolveLocale } from "@/lib/i18n/locale";
+import { preferenceCookieOptions } from "@/lib/preference-cookie";
 
 export const TIMEZONE_COOKIE = "sign_in_timezone";
 
@@ -25,6 +21,6 @@ export async function afterSignIn(userId: string) {
 
   // A cookie means this browser already chose; only a new browser needs this.
   if (!isLocale(languageCookie) && isLocale(settings.locale)) {
-    cookieStore.set(LOCALE_COOKIE, settings.locale, localeCookieOptions());
+    cookieStore.set(LOCALE_COOKIE, settings.locale, preferenceCookieOptions());
   }
 }

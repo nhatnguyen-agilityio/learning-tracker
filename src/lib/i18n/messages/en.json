@@ -3,10 +3,6 @@
     "title": "Learning Tracker",
     "description": "Bring your learning sources, notes and review cards into one flow, then review right before you forget."
   },
-  "home": {
-    "title": "Learning Tracker",
-    "tagline": "Bring your learning sources, notes and review cards into one flow, then review right before you forget."
-  },
   "language": {
     "label": "Language",
     "vi": "Tiếng Việt",
@@ -21,5 +17,19 @@
     "error": "We could not sign you in with Google. Please try again.",
     "terms": "Terms",
     "privacy": "Privacy"
+  },
+  "nav": {
+    "label": "Main navigation",
+    "brand": "Learning Tracker",
+    "today": "Today",
+    "library": "Library",
+    "cards": "Cards",
+    "settings": "Settings"
+  },
+  "settings": {
+    "language": "Language",
+    "appearance": "Appearance",
+    "light": "Light",
+    "dark": "Dark"
   }
 }
