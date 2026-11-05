@@ -37,6 +37,12 @@ Seed có 2 user chỉ dùng ở local, để test đọc chéo: `user-a@example.
 
 Muốn tạo lại database từ đầu thì tự chạy `pnpm exec supabase db reset`. Lệnh này xoá dữ liệu local nên hook không cho Claude chạy. Sau khi `seed.sql` thay đổi cũng cần chạy lệnh này.
 
+### Test với database
+
+`pnpm test` chạy cả các file `*.db.test.ts` trên database local, nên cần `pnpm db:start` trước; database chưa bật thì test fail. Mỗi test chạy trong một transaction rồi rollback, nên không để lại dữ liệu. Test chỉ chạy trên `127.0.0.1` hoặc `localhost`.
+
+CI chưa có database nên bỏ qua các test này (`CI=true`), vì vậy cần chạy `pnpm test` ở local trước khi mở PR.
+
 ### Đổi schema
 
 1. Sửa `src/lib/db/schema.ts`. Bảng mới phải có `.enableRLS()`, không tạo policy.

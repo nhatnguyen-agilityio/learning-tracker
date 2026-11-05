@@ -21,7 +21,7 @@ Chạy `nvm use` trước; repo ghim Node 24 và pnpm qua corepack.
 
 - Install: `pnpm install`
 - Run: `pnpm dev` (cổng 3000)
-- Test: `pnpm test` · E2E: `pnpm test:e2e`
+- Test: `pnpm test` (cần `pnpm db:start`) · E2E: `pnpm test:e2e`
 - Lint: `pnpm lint` · Types: `pnpm typecheck` · Format: `pnpm format`
 - Build: `pnpm build`
 - Database local: `pnpm db:start` · `pnpm db:status` · `pnpm db:stop` (cần Docker, xem README)
@@ -37,6 +37,17 @@ Chạy `nvm use` trước; repo ghim Node 24 và pnpm qua corepack.
 - Commits: một dòng, `feat(): …` / `bugfix(): …` / `refactor(): …` / `test(): …`
 - Branches: `feat/<short>` hoặc `fix/<short>` tạo từ `dev`, merge vào `dev` qua pull request (`--base dev`)
 - Deploy: chỉ PR `dev` → `main` khi đưa lên production; merge vào `main` là deploy
+
+## Viết hàm domain mới
+
+Tầng `domain` là lớp phân quyền duy nhất: app kết nối bằng role bỏ qua RLS, nên thiếu filter `userId` là lộ dữ liệu. Mẫu: `src/domain/resources.ts`.
+
+- Hàm đụng bảng của user có chữ ký `(db: Db, userId: string, ...)`; `userId` lấy từ session ở tầng gọi, không lấy từ input của client
+- Mọi câu truy vấn có `eq(table.userId, userId)` viết thẳng; `and(undefined)` của Drizzle là không có filter
+- Dòng của user khác trả về như dòng không tồn tại (`null`), không báo lỗi riêng
+- Chọn cột cần trả, không `select *`
+- Không đọc `process.env`, cookie hay `next/*` trong `src/domain`; nếu tầng gọi dùng `"use cache"`, truyền `userId` qua tham số
+- Mỗi hàm có test đọc chéo trong `*.db.test.ts`, dùng `describeWithDb` và `withTestDb` từ `src/lib/db/test-db.ts`. `withTestDb` luôn rollback, nên không đổi seed. CI không có database nên bỏ qua các test này: phải chạy `pnpm test` ở local trước khi mở PR
 
 ## Workflow
 
