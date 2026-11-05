@@ -13,11 +13,15 @@ cmd=$(jq -er '.tool_input.command' 2>/dev/null) || block "the command couldn't b
 reason=$(python3 -I -c '
 import os, re, sys
 
-# Escapes and quotes are dropped first, so commands nested in bash -c or eval are
-# still seen. Redirections go too, because their & is not a command separator.
-cmd = re.sub(r"\\(.)", r"\1", sys.argv[1].replace("\\\n", " "))
-cmd = re.sub(r"[\"\x27]", "", cmd)
-cmd = re.sub(r"\d*[<>]&[\d-]*|&>>?", " ", cmd)
+# Escapes and quotes are dropped first, layer by layer, so commands nested in
+# bash -c or eval are still seen. Redirections become spaces: their & is not a
+# command separator, and they can sit right against a word.
+cmd, previous = sys.argv[1], None
+while cmd != previous:
+    previous = cmd
+    cmd = re.sub(r"\\(.)", r"\1", cmd.replace("\\\n", ""))
+    cmd = re.sub(r"[\"\x27]", "", cmd)
+cmd = re.sub(r"\d*(?:[<>]&[\d-]*|>>?|<)|&>>?", " ", cmd)
 HOME_TARGET = re.compile(r"^(/|/\*|~|~/|~/\*|\$HOME|\$\{HOME\})/?\*?$")
 RULES = [
     (r"\bdrop\s+database", "dropping a database is run by hand. Ask the user."),
