@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { resources } from "@/lib/db/schema";
 import type { Db } from "@/lib/db/types";
 
@@ -18,7 +18,6 @@ export function listResources(db: Db, userId: string) {
   return db
     .select(resourceFields)
     .from(resources)
-    .where(eq(resources.userId, userId))
     .orderBy(desc(resources.createdAt));
 }
 
@@ -27,6 +26,6 @@ export async function getResource(db: Db, userId: string, resourceId: string) {
   const [resource] = await db
     .select(resourceFields)
     .from(resources)
-    .where(and(eq(resources.userId, userId), eq(resources.id, resourceId)));
+    .where(eq(resources.id, resourceId));
   return resource ?? null;
 }
