@@ -45,5 +45,30 @@ test("should show an error when the Google callback has no code", async ({
   await page.goto("/auth/callback");
 
   await expect(page).toHaveURL("/sign-in?error=google");
-  await expect(page.getByText(/couldn.t sign you in/)).toBeVisible();
+  await expect(page.getByText(/could not sign you in/)).toBeVisible();
+});
+
+test("should switch language on the sign-in screen", async ({ page }) => {
+  await page.goto("/sign-in");
+
+  await page.getByRole("button", { name: "Tiếng Việt" }).click();
+
+  await expect(
+    page.getByRole("button", { name: "Đăng nhập bằng Google" }),
+  ).toBeVisible();
+  await expect(page).toHaveURL("/sign-in");
+});
+
+test.describe("when the browser is in Tokyo", () => {
+  test.use({ timezoneId: "Asia/Tokyo" });
+
+  test("should send the browser time zone when signing in", async ({
+    page,
+  }) => {
+    await page.goto("/sign-in");
+
+    await expect(page.locator('input[name="timezone"]')).toHaveValue(
+      "Asia/Tokyo",
+    );
+  });
 });

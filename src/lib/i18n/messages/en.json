@@ -13,8 +13,13 @@
     "en": "English"
   },
   "signIn": {
-    "title": "Learning Tracker",
+    "brand": "Learning Tracker",
+    "title": "Remember what you learn",
+    "body": "Keep your sources, notes and review cards in one flow, then review right before you forget.",
     "google": "Sign in with Google",
-    "error": "We couldn't sign you in with Google. Please try again."
+    "googleBusy": "Redirecting to Google",
+    "error": "We could not sign you in with Google. Please try again.",
+    "terms": "Terms",
+    "privacy": "Privacy"
   }
 }

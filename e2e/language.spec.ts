@@ -32,10 +32,10 @@ test("should remember the language when reloading the page", async ({
 test.describe("when the browser prefers Vietnamese", () => {
   test.use({ locale: "vi-VN" });
 
-  test("should show Vietnamese when there is no language cookie", async ({
+  test("should show Vietnamese on sign-in when the browser prefers it", async ({
     page,
   }) => {
-    await signIn(page);
+    await page.goto("/sign-in");
     await expect(page.getByText(viTagline)).toBeVisible();
   });
 });
