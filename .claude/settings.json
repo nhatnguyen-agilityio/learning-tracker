@@ -2,15 +2,23 @@
   "permissions": {
     "defaultMode": "plan",
     "allow": [
-      "Bash(git status:*)",
-      "Bash(git diff:*)",
-      "Bash(git log:*)",
-      "Bash(git branch:*)",
-      "Bash(pnpm test:*)",
-      "Bash(pnpm lint:*)",
-      "Bash(pnpm typecheck:*)",
-      "Bash(pnpm format:check:*)",
-      "Bash(pnpm build:*)"
+      "Bash(git status)",
+      "Bash(git branch --show-current)",
+      "Bash(git diff)",
+      "Bash(git diff --stat)",
+      "Bash(git diff --staged)",
+      "Bash(git log --oneline)",
+      "Bash(pnpm test)",
+      "Bash(pnpm lint)",
+      "Bash(pnpm typecheck)",
+      "Bash(pnpm format:check)",
+      "Bash(pnpm build)"
+    ],
+    "deny": [
+      "Bash(supabase db reset:*)",
+      "Bash(pnpm db:migrate:prod:*)",
+      "Bash(vercel --prod:*)",
+      "Bash(vercel deploy --prod:*)"
     ]
   },
   "hooks": {
