@@ -164,7 +164,7 @@ Mọi bảng có `user_id`. Tầng `domain` là lớp phân quyền chính: mọ
 - **Hiệu năng:** chuyển thẻ dưới 200 ms: đặt server ở Singapore, tải trước lô thẻ, gửi lượt chấm nền qua Route Handler với hàng đợi trong `localStorage` và khoá chống trùng
 - **Trải nghiệm:** phím tắt khi ôn (Space lật, 1/2/3 chấm, Z hoàn tác); dark mode chọn Sáng/Tối trong Settings, lưu theo trình duyệt, mặc định Sáng; ghi chú tự lưu
 - **Ngôn ngữ:** tiếng Việt và tiếng Anh qua `next-intl`, không đưa ngôn ngữ vào URL; lưu ở `user_settings.locale` và cookie. Dịch giao diện, thông báo lỗi, trang Điều khoản và hướng dẫn MCP; không dịch nội dung người dùng. Có test báo lỗi khi hai file ngôn ngữ lệch key. Root layout đọc ngôn ngữ từ cookie để đặt `<html lang>`, nên đặt `instant = false` và mọi route chờ server; code trong `"use cache"` nhận ngôn ngữ qua tham số
-- **Chống lạm dụng:** khi tải link chỉ nhận http và https, chặn IP nội bộ, kiểm tra lại sau mỗi lần redirect, timeout 5 giây, đọc tối đa 1 MB. Rate limit theo user, lưu bằng Postgres. Hạn mức mỗi tài khoản: 2.000 nguồn, 10.000 thẻ, 100 KB mỗi ghi chú
+- **Chống lạm dụng:** khi tải link chỉ nhận http và https, chặn IP nội bộ, kiểm tra lại sau mỗi lần redirect, timeout 5 giây, đọc tối đa 1 MB. Rate limit theo user, lưu bằng Postgres. Hạn mức mỗi tài khoản: 2.000 nguồn, 10.000 thẻ, 100 KB mỗi ghi chú. Link dài tối đa 2.048 ký tự, tiêu đề nguồn 500 ký tự
 - **Tìm kiếm:** trong tiêu đề, URL và ghi chú, không phân biệt dấu tiếng Việt (`unaccent` và `pg_trgm`); Library và MCP dùng chung một hàm
 - **Dữ liệu người dùng:** có trang Điều khoản và Quyền riêng tư, xoá tài khoản và xuất JSON
 - **Không yêu cầu:** offline
