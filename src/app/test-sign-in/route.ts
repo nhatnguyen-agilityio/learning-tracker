@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { afterSignIn } from "@/lib/auth/first-sign-in";
 import { createClient } from "@/lib/auth/server";
 import { canUseTestSignIn } from "@/lib/auth/test-sign-in";
 
@@ -17,11 +18,13 @@ export async function GET(request: NextRequest) {
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password: TEST_PASSWORD,
   });
 
   if (error) return new NextResponse(error.message, { status: 500 });
+
+  await afterSignIn(data.user.id);
   return NextResponse.redirect(new URL("/", request.url));
 }

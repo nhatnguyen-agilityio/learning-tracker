@@ -39,7 +39,7 @@ Muốn tạo lại database từ đầu thì tự chạy `pnpm exec supabase db 
 
 ### Đăng nhập
 
-App chỉ cho vào khi đã đăng nhập, nên `pnpm dev` cần `.env.local` và Supabase đang chạy. `pnpm test:e2e` cũng vậy: E2E đăng nhập bằng user seed qua `/test-sign-in`, Playwright tự bật cờ `TEST_SIGN_IN_ENABLED`. Không bật cờ này trong `.env.local` nếu định chạy `pnpm build`, vì build sẽ dừng.
+App chỉ cho vào khi đã đăng nhập, nên `pnpm dev` cần `.env.local` (gồm cả `DATABASE_URL`) và Supabase đang chạy. Lần đăng nhập đầu tiên tạo `user_settings` từ múi giờ và ngôn ngữ của trình duyệt. `pnpm test:e2e` cũng vậy: E2E đăng nhập bằng user seed qua `/test-sign-in`, Playwright tự bật cờ `TEST_SIGN_IN_ENABLED`. Không bật cờ này trong `.env.local` nếu định chạy `pnpm build`, vì build sẽ dừng.
 
 Đăng nhập Google ở local cần một OAuth client của riêng bạn:
 
