@@ -140,12 +140,12 @@ App cung cấp MCP server để Claude đọc dữ liệu và tạo thẻ. Việ
 
 ## Data model sơ bộ
 
-Mọi bảng có `user_id`. Tầng `domain` là lớp phân quyền chính: mọi hàm truy vấn bắt buộc nhận `userId`, và có test chặn đọc chéo giữa hai user. RLS bật trên mọi bảng nhưng không có policy, để khoá đường truy cập qua API công khai của Supabase.
+Mọi bảng có `user_id`. Tầng `domain` là lớp phân quyền chính: mọi hàm truy vấn bắt buộc nhận `userId`, và có test chặn đọc chéo giữa hai user. RLS bật trên mọi bảng nhưng không có policy, để khoá đường truy cập qua API công khai của Supabase. Liên kết giữa các bảng dùng khoá ngoại ghép `(id, user_id)`, nên database từ chối dòng trỏ sang dữ liệu của user khác.
 
 | Bảng | Field chính | Ghi chú |
 | --- | --- | --- |
 | `topics` | id, user_id, name, color | Chủ đề người dùng tự tạo |
-| `resources` | id, user_id, url, title, type, thumbnail_url, status, progress (0–100), created_at, updated_at | type: article / video / course / doc / other; status: want / learning / done; cảnh báo trùng theo user_id + url đã chuẩn hoá |
+| `resources` | id, user_id, url, normalized_url, title, type, thumbnail_url, status, progress (0–100), created_at, updated_at | type: article / video / course / doc / other; status: want / learning / done; `url` giữ link gốc; cảnh báo trùng theo user_id + normalized_url |
 | `resource_topics` | user_id, resource_id, topic_id | Nhiều–nhiều |
 | `notes` | id, user_id, resource_id, content_md, created_at, updated_at | Một nguồn có nhiều ghi chú |
 | `cards` | id, user_id, resource_id?, type, front, back, extra (jsonb), status, source, created_at, deleted_at | status: pending / active / suspended; source: manual / mcp; deleted_at: xoá mềm thẻ đã ôn |
