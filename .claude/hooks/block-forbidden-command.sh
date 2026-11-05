@@ -13,11 +13,6 @@ cmd=$(jq -er '.tool_input.command' 2>/dev/null) || block "the command couldn't b
 reason=$(python3 -I -c '
 import os, re, sys
 
-# Escapes and quotes are dropped first, so commands nested in bash -c or eval are
-# still seen. Redirections go too, because their & is not a command separator.
-cmd = re.sub(r"\\(.)", r"\1", sys.argv[1].replace("\\\n", " "))
-cmd = re.sub(r"[\"\x27]", "", cmd)
-cmd = re.sub(r"\d*[<>]&[\d-]*|&>>?", " ", cmd)
 HOME_TARGET = re.compile(r"^(/|/\*|~|~/|~/\*|\$HOME|\$\{HOME\})/?\*?$")
 RULES = [
     (r"\bdrop\s+database", "dropping a database is run by hand. Ask the user."),
@@ -25,6 +20,17 @@ RULES = [
     (r"db:migrate:prod", "production migrations are run by hand. Ask the user."),
     (r"\bvercel\b[^;&|\n]*\s--prod\b", "production deploys go through a merge to main."),
 ]
+
+def flatten(text, joiner):
+    # Escapes and quotes are dropped layer by layer, so commands nested in
+    # bash -c or eval are still seen. Redirections become spaces: their & is
+    # not a command separator, and they can sit right against a word.
+    previous = None
+    while text != previous:
+        previous = text
+        text = re.sub(r"\\(.)", r"\1", text.replace("\\\n", joiner))
+        text = re.sub(r"[\"\x27]", "", text)
+    return re.sub(r"\d*(?:[<>]&[\d-]*|>>?|<)|&>>?", " ", text)
 
 def deletes_home(words):
     names = [os.path.basename(w).lower() for w in words]
@@ -35,13 +41,21 @@ def deletes_home(words):
     recursive = "r" in shorts.lower() or "--recursive" in args
     return recursive and any(HOME_TARGET.match(a) for a in args)
 
-for pattern, message in RULES:
-    if re.search(pattern, cmd, re.I):
-        print(message)
-        sys.exit()
-for part in re.split(r"&&|\|\||[;|&()`\n]", cmd):
-    if deletes_home(part.split()):
-        print("refusing to recursively delete / or the home folder.")
+def find_reason(cmd):
+    for pattern, message in RULES:
+        if re.search(pattern, cmd, re.I):
+            return message
+    for part in re.split(r"&&|\|\||[;|&()`\n]", cmd):
+        if deletes_home(part.split()):
+            return "refusing to recursively delete / or the home folder."
+    return ""
+
+# Bash joins a line that ends in one backslash, but two backslashes end the
+# command. Checking both readings avoids having to tell them apart.
+for joiner in ("", " "):
+    found = find_reason(flatten(sys.argv[1], joiner))
+    if found:
+        print(found)
         break
 ' "$cmd") || block "the command couldn't be checked."
 
