@@ -56,7 +56,10 @@
     "edit": "Sửa",
     "delete": "Xoá",
     "cancel": "Huỷ",
-    "save": "Lưu"
+    "save": "Lưu",
+    "yourData": "Dữ liệu của bạn",
+    "exportHint": "Tải file JSON chứa toàn bộ nguồn, ghi chú, thẻ và lịch sử ôn.",
+    "export": "Xuất dữ liệu JSON"
   },
   "resourceForm": {
     "add": "Thêm nguồn",
