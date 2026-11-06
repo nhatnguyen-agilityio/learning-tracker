@@ -2,9 +2,21 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useEffect, useEffectEvent, useState } from "react";
+import {
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { Button } from "@/components/ui/button";
 import type { ReviewRating } from "@/domain/fsrs";
+import {
+  createReviewQueue,
+  type QueuedRating,
+  type QueueStatus,
+  type SendResult,
+} from "@/lib/review-queue/queue";
 import { ReviewCard, type ReviewCardData } from "./review-card";
 
 const RATINGS = [
@@ -37,17 +49,33 @@ function isTyping(target: EventTarget | null) {
   );
 }
 
-async function sendRating(cardId: string, rating: ReviewRating) {
+async function sendRating(entry: QueuedRating): Promise<SendResult> {
   const response = await fetch("/api/reviews", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({
-      cardId,
-      rating,
-      idempotencyKey: crypto.randomUUID(),
-    }),
+    body: JSON.stringify(entry),
   });
-  return response.ok;
+
+  if (response.ok) return "done";
+  if (response.status === 401) return "stop";
+  return response.status < 500 ? "drop" : "retry";
+}
+
+function subscribeToNetwork(onChange: () => void) {
+  window.addEventListener("online", onChange);
+  window.addEventListener("offline", onChange);
+  return () => {
+    window.removeEventListener("online", onChange);
+    window.removeEventListener("offline", onChange);
+  };
+}
+
+function readStorage() {
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
 }
 
 function Kbd({ children }: { children: string }) {
@@ -58,25 +86,61 @@ function Kbd({ children }: { children: string }) {
   );
 }
 
-export function ReviewSession({ cards }: { cards: ReviewCardData[] }) {
+export function ReviewSession({
+  cards,
+  userId,
+}: {
+  cards: ReviewCardData[];
+  userId: string;
+}) {
   const t = useTranslations("review");
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
-  const [saveFailed, setSaveFailed] = useState(false);
+  const [waitingIds, setWaitingIds] = useState<string[]>([]);
+  const [queueState, setQueueState] = useState<{
+    pending: number;
+    status: QueueStatus;
+  }>({ pending: 0, status: "idle" });
+  const online = useSyncExternalStore(
+    subscribeToNetwork,
+    () => navigator.onLine,
+    () => true,
+  );
+  const queue = useRef<ReturnType<typeof createReviewQueue>>(null);
 
-  const card = cards.at(index);
-  const left = cards.length - index;
+  useEffect(() => {
+    const current = createReviewQueue({
+      userId,
+      storage: readStorage(),
+      send: sendRating,
+      onChange: setQueueState,
+      onRestore: setWaitingIds,
+    });
+    queue.current = current;
+    current.start();
+
+    const sendNow = () => current.retryNow();
+    window.addEventListener("online", sendNow);
+    return () => {
+      current.pause();
+      window.removeEventListener("online", sendNow);
+    };
+  }, [userId]);
+
+  const session = cards.filter((item) => !waitingIds.includes(item.id));
+  const card = session.at(index);
+  const left = session.length - index;
 
   function rate(rating: ReviewRating) {
     if (!card) return;
 
+    queue.current?.add({
+      cardId: card.id,
+      rating,
+      idempotencyKey: crypto.randomUUID(),
+    });
     setIndex((current) => current + 1);
     setFlipped(false);
-    sendRating(card.id, rating)
-      .catch(() => false)
-      .then((saved) => {
-        if (!saved) setSaveFailed(true);
-      });
   }
 
   const onKeyDown = useEffectEvent((event: KeyboardEvent) => {
@@ -111,17 +175,33 @@ export function ReviewSession({ cards }: { cards: ReviewCardData[] }) {
           </span>
         ) : null}
       </div>
-      {cards.length > 0 ? (
+      {session.length > 0 ? (
         <span aria-hidden className="h-1 overflow-hidden rounded-full bg-muted">
           <span
             className="block h-full rounded-full bg-primary"
-            style={{ width: `${(index / cards.length) * 100}%` }}
+            style={{ width: `${(index / session.length) * 100}%` }}
           />
         </span>
       ) : null}
-      {saveFailed ? (
+      {!online ? (
+        <p
+          role="status"
+          className="rounded-md bg-warning-soft p-3 text-sm text-warning-soft-foreground"
+        >
+          {t("offline", { count: queueState.pending })}
+        </p>
+      ) : null}
+      {online && queueState.status === "retrying" ? (
+        <p
+          role="status"
+          className="rounded-md bg-muted p-3 text-sm text-muted-foreground"
+        >
+          {t("resending", { count: queueState.pending })}
+        </p>
+      ) : null}
+      {queueState.status === "stopped" ? (
         <p role="alert" className="text-sm text-destructive">
-          {t("saveFailed")}
+          {t("signedOut")}
         </p>
       ) : null}
 

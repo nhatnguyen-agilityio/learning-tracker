@@ -195,11 +195,13 @@
     "help": "Could not recall the answer? Choose Forgot. Correct but took a long time? Choose Vaguely.",
     "keyFlip": "Flip",
     "keyRate": "Rate",
-    "saveFailed": "Could not save your last rating. Check your connection.",
     "noneLeft": "No cards left for now.",
     "backToday": "Back to Today",
     "errorTitle": "Could not load your cards",
     "errorBody": "No ratings were lost. Try again or go back to Today.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "offline": "Connection lost. {count, plural, =0 {Keep reviewing.} one {# rating is waiting to be sent. Keep reviewing.} other {# ratings are waiting to be sent. Keep reviewing.}}",
+    "resending": "Sending {count, plural, one {# rating} other {# ratings}}.",
+    "signedOut": "Your session has ended. Sign in again and your ratings will be sent."
   }
 }
