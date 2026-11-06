@@ -14,6 +14,11 @@ export function isPublicPath(pathname: string): boolean {
   );
 }
 
+/** API routes answer 401 themselves; a redirect would mean nothing to fetch. */
+export function isApiPath(pathname: string): boolean {
+  return pathname.startsWith("/api/");
+}
+
 const PROBE_ORIGIN = "http://internal.invalid";
 
 /** Keeps a post-sign-in redirect inside the app; anything else goes home. */
