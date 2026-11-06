@@ -15,6 +15,13 @@
       "when": 1793868853307,
       "tag": "20261105085413_create_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793930710120,
+      "tag": "20261106020510_unique_topic_names",
+      "breakpoints": true
     }
   ]
 }

@@ -68,7 +68,10 @@ export const topics = pgTable(
   },
   (table) => [
     unique("topics_id_user_id_unique").on(table.id, table.userId),
-    index("topics_user_id_idx").on(table.userId),
+    uniqueIndex("topics_user_id_lower_name_idx").on(
+      table.userId,
+      sql`lower(${table.name})`,
+    ),
   ],
 ).enableRLS();
 

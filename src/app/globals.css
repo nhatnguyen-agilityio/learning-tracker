@@ -43,6 +43,14 @@
   --code: #f7f5ef;
   --code-foreground: #1e1c18;
   --radius: 8px;
+  --topic-1: #3d69e6;
+  --topic-2: #4a9455;
+  --topic-3: #d98e04;
+  --topic-4: #dc3f3f;
+  --topic-5: #8b5cd6;
+  --topic-6: #0e9aa7;
+  --topic-7: #d6498f;
+  --topic-8: #6a6458;
 }
 
 [data-theme="dark"] {
@@ -91,6 +99,14 @@
   --font-sans: var(--font-be-vietnam-pro), system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
 
+  --color-topic-1: var(--topic-1);
+  --color-topic-2: var(--topic-2);
+  --color-topic-3: var(--topic-3);
+  --color-topic-4: var(--topic-4);
+  --color-topic-5: var(--topic-5);
+  --color-topic-6: var(--topic-6);
+  --color-topic-7: var(--topic-7);
+  --color-topic-8: var(--topic-8);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

@@ -144,7 +144,7 @@ Every table has `user_id`. The `domain` layer is the main authorization layer: e
 
 | Table | Main fields | Notes |
 | --- | --- | --- |
-| `topics` | id, user_id, name, color | Topics the user creates |
+| `topics` | id, user_id, name, color | Topics the user creates; name up to 50 characters, unique per user ignoring case; color is one of `topic-1` to `topic-8` |
 | `resources` | id, user_id, url, normalized_url, title, type, thumbnail_url, status, progress (0–100), created_at, updated_at | type: article / video / course / doc / other; status: want / learning / done; `url` keeps the original link; duplicate warning by user_id + normalized_url |
 | `resource_topics` | user_id, resource_id, topic_id | Many-to-many |
 | `notes` | id, user_id, resource_id, content_md, created_at, updated_at | A resource has many notes |
