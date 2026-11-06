@@ -75,6 +75,11 @@
     "emptyBody": "Thêm bài viết, video hoặc khoá học bạn đang theo. Thẻ ôn sẽ xuất hiện ở đây.",
     "errorTitle": "Không tải được thư viện",
     "errorBody": "Kiểm tra kết nối rồi thử lại.",
-    "retry": "Thử lại"
+    "retry": "Thử lại",
+    "search": "Tìm kiếm",
+    "searchPlaceholder": "Tìm theo tiêu đề, URL, ghi chú",
+    "all": "Tất cả",
+    "noResult": "Không có nguồn nào khớp.",
+    "clearFilters": "Xoá bộ lọc"
   }
 }
