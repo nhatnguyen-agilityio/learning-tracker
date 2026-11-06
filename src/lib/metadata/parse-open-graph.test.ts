@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseOpenGraph } from "./parse-open-graph";
+import { MAX_PARSED_CHARACTERS, parseOpenGraph } from "./parse-open-graph";
 
 describe("parseOpenGraph", () => {
   it("should read the title and image when a page has Open Graph tags", () => {
@@ -41,6 +41,12 @@ describe("parseOpenGraph", () => {
       image: null,
       ogType: null,
     });
+  });
+
+  it("should ignore tags when they come after the parsed part of the page", () => {
+    const html = `${" ".repeat(MAX_PARSED_CHARACTERS)}<title>Too late</title>`;
+
+    expect(parseOpenGraph(html).title).toBeNull();
   });
 
   it("should still read the tags when the HTML is broken", () => {

@@ -1,5 +1,8 @@
 import { Parser } from "htmlparser2";
 
+// These tags live in the head, so the rest of a large page is never parsed.
+export const MAX_PARSED_CHARACTERS = 128 * 1024;
+
 export type PageTags = {
   title: string | null;
   image: string | null;
@@ -37,7 +40,7 @@ export function parseOpenGraph(html: string): PageTags {
       }
     },
   });
-  parser.write(html);
+  parser.write(html.slice(0, MAX_PARSED_CHARACTERS));
   parser.end();
 
   return {
