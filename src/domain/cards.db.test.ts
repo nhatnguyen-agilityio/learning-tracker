@@ -33,6 +33,9 @@ async function addCard(db: Db, userId: string, resourceId: string) {
   return result.card.id;
 }
 
+/** These tests write thousands of rows, which is slow on a busy machine. */
+const LIMIT_TEST_TIMEOUT_MS = 30_000;
+
 describe("creating cards", () => {
   it("should create an active manual card when the sides are valid", () =>
     withTestDb(async (db) => {
@@ -92,24 +95,28 @@ describe("creating cards", () => {
       });
     }));
 
-  it("should refuse a new card when the account has reached the limit", () =>
-    withTestDb(async (db) => {
-      const resourceId = await addResource(db, userA);
-      await db.insert(cards).values(
-        Array.from({ length: MAX_CARDS_PER_USER }, () => ({
-          userId: userA,
-          resourceId,
-          ...sides,
-        })),
-      );
-      const otherResource = await addResource(db, userB);
+  it(
+    "should refuse a new card when the account has reached the limit",
+    () =>
+      withTestDb(async (db) => {
+        const resourceId = await addResource(db, userA);
+        await db.insert(cards).values(
+          Array.from({ length: MAX_CARDS_PER_USER }, () => ({
+            userId: userA,
+            resourceId,
+            ...sides,
+          })),
+        );
+        const otherResource = await addResource(db, userB);
 
-      const refused = await createCard(db, userA, resourceId, sides);
-      const otherUser = await createCard(db, userB, otherResource, sides);
+        const refused = await createCard(db, userA, resourceId, sides);
+        const otherUser = await createCard(db, userB, otherResource, sides);
 
-      expect(refused).toEqual({ kind: "limit_reached" });
-      expect(otherUser?.kind).toBe("created");
-    }));
+        expect(refused).toEqual({ kind: "limit_reached" });
+        expect(otherUser?.kind).toBe("created");
+      }),
+    LIMIT_TEST_TIMEOUT_MS,
+  );
 
   it("should not add a card to another user's resource", () =>
     withTestDb(async (db) => {

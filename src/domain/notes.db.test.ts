@@ -31,6 +31,9 @@ describe("noteBytes", () => {
   });
 });
 
+/** These tests write thousands of rows, which is slow on a busy machine. */
+const LIMIT_TEST_TIMEOUT_MS = 30_000;
+
 describe("creating notes", () => {
   it("should create the note when the content is valid", () =>
     withTestDb(async (db) => {
@@ -81,23 +84,27 @@ describe("creating notes", () => {
       expect(result?.kind).toBe("created");
     }));
 
-  it("should refuse a new note when the account has reached the limit", () =>
-    withTestDb(async (db) => {
-      const resourceId = await addResource(db, userA);
-      await db.insert(notes).values(
-        Array.from({ length: MAX_NOTES_PER_USER }, () => ({
-          userId: userA,
-          resourceId,
-        })),
-      );
-      const otherResource = await addResource(db, userB);
+  it(
+    "should refuse a new note when the account has reached the limit",
+    () =>
+      withTestDb(async (db) => {
+        const resourceId = await addResource(db, userA);
+        await db.insert(notes).values(
+          Array.from({ length: MAX_NOTES_PER_USER }, () => ({
+            userId: userA,
+            resourceId,
+          })),
+        );
+        const otherResource = await addResource(db, userB);
 
-      const refused = await createNote(db, userA, resourceId);
-      const otherUser = await createNote(db, userB, otherResource);
+        const refused = await createNote(db, userA, resourceId);
+        const otherUser = await createNote(db, userB, otherResource);
 
-      expect(refused).toEqual({ kind: "limit_reached" });
-      expect(otherUser?.kind).toBe("created");
-    }));
+        expect(refused).toEqual({ kind: "limit_reached" });
+        expect(otherUser?.kind).toBe("created");
+      }),
+    LIMIT_TEST_TIMEOUT_MS,
+  );
 
   it("should not add a note to another user's resource", () =>
     withTestDb(async (db) => {

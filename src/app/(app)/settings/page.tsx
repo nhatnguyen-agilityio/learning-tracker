@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { DeleteAccountSection } from "@/components/settings/delete-account-section";
 import { NewCardsField } from "@/components/settings/new-cards-field";
 import { TimezoneSelect } from "@/components/settings/timezone-select";
 import { TopicsSection } from "@/components/settings/topics-section";
@@ -74,6 +75,7 @@ export default async function Settings() {
           {t("signOut")}
         </Button>
       </form>
+      <DeleteAccountSection userId={userId} />
     </>
   );
 }

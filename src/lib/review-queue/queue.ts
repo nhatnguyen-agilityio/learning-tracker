@@ -27,6 +27,10 @@ type QueueOptions = {
 const BASE_DELAY_MS = 1000;
 const MAX_DELAY_MS = 30_000;
 
+export function reviewQueueKey(userId: string) {
+  return `review-queue:${userId}`;
+}
+
 export function retryDelay(attempt: number) {
   return Math.min(BASE_DELAY_MS * 2 ** attempt, MAX_DELAY_MS);
 }
@@ -67,7 +71,7 @@ export function createReviewQueue({
   onChange,
   onRestore,
 }: QueueOptions) {
-  const storageKey = `review-queue:${userId}`;
+  const storageKey = reviewQueueKey(userId);
   let entries: QueuedAction[] = [];
   let status: QueueStatus = "idle";
   let sending = false;

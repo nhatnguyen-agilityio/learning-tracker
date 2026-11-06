@@ -59,7 +59,15 @@
     "save": "Lưu",
     "yourData": "Dữ liệu của bạn",
     "exportHint": "Tải file JSON chứa toàn bộ nguồn, ghi chú, thẻ và lịch sử ôn.",
-    "export": "Xuất dữ liệu JSON"
+    "export": "Xuất dữ liệu JSON",
+    "deleteAccount": "Xoá tài khoản",
+    "deleteAccountHint": "Xoá toàn bộ dữ liệu của tài khoản và không khôi phục được.",
+    "deleteAccountTitle": "Xoá tài khoản?",
+    "deleteAccountBody": "Toàn bộ nguồn, ghi chú, thẻ và lịch sử ôn sẽ bị xoá và không khôi phục được. Hãy xuất dữ liệu trước nếu muốn giữ bản sao.",
+    "deleteAccountType": "Gõ XOÁ để xác nhận",
+    "deleteAccountWord": "XOÁ",
+    "deleteAccountAction": "Xoá tài khoản của tôi",
+    "deleteAccountFailed": "Không xoá được tài khoản. Thử lại."
   },
   "resourceForm": {
     "add": "Thêm nguồn",
@@ -323,7 +331,7 @@
       },
       "s6": {
         "title": "Quyền của bạn",
-        "body": "Bạn có thể xuất toàn bộ dữ liệu dưới dạng JSON và xoá tài khoản trong Cài đặt. Xoá tài khoản sẽ xoá toàn bộ dữ liệu của bạn."
+        "body": "Bạn có thể xuất toàn bộ dữ liệu dưới dạng JSON và xoá tài khoản trong Cài đặt. Xoá tài khoản sẽ xoá dữ liệu khỏi hệ thống ngay lập tức, và dữ liệu hết hẳn khỏi bản sao lưu sau 14 ngày."
       }
     }
   }

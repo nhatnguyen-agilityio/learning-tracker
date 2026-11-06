@@ -4,9 +4,12 @@ import { signInNewUser } from "./sign-in";
 
 const dialog = (page: Page) => page.getByRole("dialog");
 
+/** Retries, because a click before hydration does nothing. */
 async function openModal(page: Page) {
-  await page.getByRole("button", { name: "Add a card" }).click();
-  await expect(dialog(page)).toBeVisible();
+  await expect(async () => {
+    await page.getByRole("button", { name: "Add a card" }).click();
+    await expect(dialog(page)).toBeVisible({ timeout: 500 });
+  }).toPass();
 }
 
 async function fillSides(page: Page, front: string, back: string) {
