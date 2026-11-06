@@ -232,3 +232,32 @@ export async function deleteResource(
     .returning({ id: resources.id });
   return deleted.length > 0;
 }
+
+export async function countResources(db: Db, userId: string) {
+  const [{ total }] = await db
+    .select({ total: count() })
+    .from(resources)
+    .where(eq(resources.userId, userId));
+  return total;
+}
+
+const MAX_IN_PROGRESS_SHOWN = 3;
+
+/** Resources being learned, the most recently changed first. */
+export async function listResourcesInProgress(db: Db, userId: string) {
+  const learning = and(
+    eq(resources.userId, userId),
+    eq(resources.status, "learning"),
+  );
+
+  const [rows, [{ total }]] = await Promise.all([
+    db
+      .select(resourceFields)
+      .from(resources)
+      .where(learning)
+      .orderBy(desc(resources.updatedAt), desc(resources.id))
+      .limit(MAX_IN_PROGRESS_SHOWN),
+    db.select({ total: count() }).from(resources).where(learning),
+  ]);
+  return { resources: rows, total };
+}

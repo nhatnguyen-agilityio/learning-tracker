@@ -7,6 +7,7 @@ import { getUserSettings } from "./user-settings";
 
 const RECALL_WINDOW_DAYS = 30;
 const FORGOT_VALUE = 1;
+const RECENT_DAYS = 7;
 const NEW_STATE = 0;
 
 /** A span of review days when a card was waiting to be reviewed. */
@@ -60,6 +61,14 @@ export function computeRecallRate(ratings: RatedReview[]) {
     (rating) => rating !== FORGOT_VALUE,
   ).length;
   return Math.round((recalled / first.size) * 100);
+}
+
+/** Whether each of the last 7 days had a review, today last. */
+export function computeRecentDays(reviewDays: Iterable<string>, today: string) {
+  const reviewed = new Set(reviewDays);
+  const days = [today];
+  while (days.length < RECENT_DAYS) days.unshift(previousDay(days[0]));
+  return days.map((day) => reviewed.has(day));
 }
 
 /** Ratings must be oldest first, which is how they are read below. */
@@ -117,12 +126,11 @@ export async function getReviewStats(db: Db, userId: string, now: Date) {
 
   const windowStart = now.getTime() - RECALL_WINDOW_DAYS * 24 * 60 * 60 * 1000;
 
+  const reviewDays = rated.map(({ day }) => day);
+
   return {
-    streak: computeStreak(
-      rated.map(({ day }) => day),
-      dueSpans,
-      dayOf(now),
-    ),
+    streak: computeStreak(reviewDays, dueSpans, dayOf(now)),
+    recentDays: computeRecentDays(reviewDays, dayOf(now)),
     dueCount,
     recallRate: computeRecallRate(
       rated.filter(({ reviewedAt }) => reviewedAt.getTime() >= windowStart),

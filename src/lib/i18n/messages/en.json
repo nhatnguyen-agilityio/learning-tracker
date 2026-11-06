@@ -216,5 +216,24 @@
     "rateNote": "Recall rate counts the first rating of each card.",
     "keepReviewing": "Keep reviewing",
     "batchFailed": "Could not load more cards. Try again."
+  },
+  "today": {
+    "dueLabel": "{count, plural, one {card due} other {cards due}}",
+    "backlog": "You have a backlog after your break. Reviews come in batches of 50, oldest first, and new cards are paused until you catch up.",
+    "noDueTitle": "No cards due today",
+    "doneTitle": "All done for today",
+    "noDueBody": "Your next cards are due tomorrow. Your streak is safe.",
+    "firstTitle": "Start with a learning source",
+    "firstBody": "Add an article, video or course you are following. Your review cards will show up here.",
+    "firstAction": "Add your first learning source",
+    "streak": "{count}-day streak",
+    "noStreak": "Review one card today to start a new streak",
+    "inProgress": "In progress",
+    "seeAll": "See all {count}",
+    "noLearning": "No sources in progress yet.",
+    "openLibrary": "Open Library",
+    "errorTitle": "Could not load today’s data",
+    "errorBody": "Check your connection and try again.",
+    "retry": "Try again"
   }
 }
