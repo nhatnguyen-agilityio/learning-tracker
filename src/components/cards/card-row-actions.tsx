@@ -2,7 +2,11 @@
 
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
-import { changeCardSuspended, removeCard } from "@/app/(app)/cards/actions";
+import {
+  approve,
+  changeCardSuspended,
+  removeCard,
+} from "@/app/(app)/cards/actions";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,12 +23,14 @@ type CardRowActionsProps = {
   cardId: string;
   resourceTitle: string | null;
   suspended: boolean;
+  pending?: boolean;
 };
 
 export function CardRowActions({
   cardId,
   resourceTitle,
   suspended,
+  pending = false,
 }: CardRowActionsProps) {
   const t = useTranslations("cardsScreen");
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -48,14 +54,16 @@ export function CardRowActions({
         </p>
       ) : null}
       <CardModal target={{ kind: "edit", cardId, resourceTitle }} />
-      <Button
-        variant="ghost"
-        size="sm"
-        disabled={busy}
-        onClick={() => run(() => changeCardSuspended(cardId, !suspended))}
-      >
-        {t(suspended ? "resume" : "suspend")}
-      </Button>
+      {pending ? null : (
+        <Button
+          variant="ghost"
+          size="sm"
+          disabled={busy}
+          onClick={() => run(() => changeCardSuspended(cardId, !suspended))}
+        >
+          {t(suspended ? "resume" : "suspend")}
+        </Button>
+      )}
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <DialogTrigger asChild>
           <Button variant="ghost" size="sm">
@@ -81,6 +89,16 @@ export function CardRowActions({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {pending ? (
+        <Button
+          variant="secondary"
+          size="sm"
+          disabled={busy}
+          onClick={() => run(() => approve(cardId))}
+        >
+          {t("approve")}
+        </Button>
+      ) : null}
     </div>
   );
 }

@@ -90,8 +90,7 @@ export function createMcpServer(userId: string) {
   server.registerTool(
     "add_resource",
     {
-      description:
-        "Add a link to the user's library. Reads the page title; a link already in the library is returned with duplicate: true.",
+      description: `Add a link to the user's library. Reads the page title; a link already in the library is returned with duplicate: true. ${UNTRUSTED_TEXT_NOTE}`,
       inputSchema: {
         url: z.string().max(MAX_URL_LENGTH),
         topics: z

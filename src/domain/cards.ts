@@ -279,3 +279,95 @@ export async function createPendingCards(
     return { kind: "created", ids: created.map(({ id }) => id) } as const;
   });
 }
+
+const MAX_PENDING_SHOWN = 500;
+
+function isPending(userId: string) {
+  return and(
+    eq(cards.userId, userId),
+    eq(cards.status, "pending"),
+    isNull(cards.deletedAt),
+  );
+}
+
+/** Cards waiting for approval, oldest first, with their resource if any. */
+export function listPendingCards(db: Db, userId: string) {
+  return db
+    .select({
+      id: cards.id,
+      front: cards.front,
+      back: cards.back,
+      resourceId: cards.resourceId,
+      resourceTitle: resources.title,
+    })
+    .from(cards)
+    .leftJoin(resources, eq(resources.id, cards.resourceId))
+    .where(isPending(userId))
+    .orderBy(asc(cards.createdAt), asc(cards.id))
+    .limit(MAX_PENDING_SHOWN);
+}
+
+export async function countPendingCards(db: Db, userId: string) {
+  const [{ total }] = await db
+    .select({ total: count() })
+    .from(cards)
+    .where(isPending(userId));
+  return total;
+}
+
+/** Approved cards get a schedule, which puts them in the new-card queue. */
+async function activateCards(
+  db: Db,
+  userId: string,
+  which: ReturnType<typeof and>,
+  now: Date,
+) {
+  return db.transaction(async (tx) => {
+    const approved = await tx
+      .update(cards)
+      .set({ status: "active" })
+      .where(and(isPending(userId), which))
+      .returning({ id: cards.id, resourceId: cards.resourceId });
+
+    if (approved.length > 0) {
+      await tx
+        .insert(cardSchedules)
+        .values(approved.map(({ id }) => ({ cardId: id, userId, due: now })))
+        .onConflictDoNothing();
+    }
+    return approved;
+  });
+}
+
+/** Returns null for another user's card, or one that isn't pending. */
+export async function approveCard(
+  db: Db,
+  userId: string,
+  cardId: string,
+  now: Date,
+) {
+  if (!isUuid(cardId)) return null;
+
+  const [card] = await activateCards(db, userId, eq(cards.id, cardId), now);
+  return card ?? null;
+}
+
+/** `resourceId` null means the cards with no resource. Returns how many. */
+export async function approveAllCards(
+  db: Db,
+  userId: string,
+  resourceId: string | null,
+  now: Date,
+) {
+  if (resourceId !== null && !isUuid(resourceId)) return 0;
+
+  const approved = await activateCards(
+    db,
+    userId,
+    resourceId === null
+      ? isNull(cards.resourceId)
+      : eq(cards.resourceId, resourceId),
+    now,
+  );
+  return approved.length;
+}

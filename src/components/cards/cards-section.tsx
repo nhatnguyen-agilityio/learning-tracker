@@ -1,7 +1,7 @@
 import { useTranslations } from "next-intl";
 import { CardModal } from "./card-modal";
 
-type CardRow = { id: string; front: string; isNew: boolean };
+type CardRow = { id: string; front: string; status: string; isNew: boolean };
 
 export function CardsSection({
   resourceId,
@@ -31,6 +31,11 @@ export function CardsSection({
               <span className="line-clamp-2 min-w-0 flex-1 wrap-anywhere">
                 {card.front}
               </span>
+              {card.status === "pending" ? (
+                <span className="flex-none rounded-sm bg-warning-soft px-1.5 py-0.5 text-xs font-medium text-warning-soft-foreground">
+                  {t("pending")}
+                </span>
+              ) : null}
               {card.isNew ? (
                 <span className="flex-none rounded-sm bg-primary-soft px-1.5 py-0.5 text-xs font-medium text-primary-soft-foreground">
                   {t("new")}
