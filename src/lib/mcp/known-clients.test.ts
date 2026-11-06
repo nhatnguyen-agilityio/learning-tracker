@@ -18,6 +18,10 @@ describe("isKnownRedirect", () => {
     "https://notclaude.ai/callback",
     "https://claude.ai@example.com/callback",
     "https://example.com/claude.ai",
+    "https://claude.ai/redirect?to=https://example.com",
+    "https://claude.ai/api/mcp/auth_callback?next=example.com",
+    "https://user@claude.ai/api/mcp/auth_callback",
+    "claude://claude.ai/api/mcp/auth_callback",
     "myapp://localhost/callback",
     "not an address",
     "",
@@ -33,7 +37,12 @@ describe("redirectHost", () => {
     );
   });
 
-  it("should show the whole address when it has no host", () => {
-    expect(redirectHost("myapp:/callback")).toBe("myapp:/callback");
+  it.each([
+    "myapp:/callback",
+    "myapp://claude.ai/callback",
+    "http://claude.ai/callback",
+    "not an address",
+  ])("should show the whole address when it is %s", (uri) => {
+    expect(redirectHost(uri)).toBe(uri);
   });
 });
