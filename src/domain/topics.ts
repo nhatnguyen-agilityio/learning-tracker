@@ -1,19 +1,11 @@
-import { and, asc, eq, inArray, ne, sql } from "drizzle-orm";
+import { and, asc, count, eq, inArray, ne, sql } from "drizzle-orm";
 import { resourceTopics, topics } from "@/lib/db/schema";
 import type { Db } from "@/lib/db/types";
 import { getResource, type listResources } from "./resources";
+import { MAX_TOPIC_NAME_LENGTH, TOPIC_COLORS } from "./topic-limits";
+import { isUuid } from "./uuid";
 
-export const TOPIC_COLORS = [
-  "topic-1",
-  "topic-2",
-  "topic-3",
-  "topic-4",
-  "topic-5",
-  "topic-6",
-  "topic-7",
-  "topic-8",
-] as const;
-export const MAX_TOPIC_NAME_LENGTH = 50;
+export { MAX_TOPIC_NAME_LENGTH, TOPIC_COLORS };
 
 const topicFields = {
   id: topics.id,
@@ -46,6 +38,17 @@ export function listTopics(db: Db, userId: string) {
     .select(topicFields)
     .from(topics)
     .where(eq(topics.userId, userId))
+    .orderBy(asc(topics.name));
+}
+
+/** The Settings list, with how many resources use each topic. */
+export function listTopicsWithUsage(db: Db, userId: string) {
+  return db
+    .select({ ...topicFields, resourceCount: count(resourceTopics.resourceId) })
+    .from(topics)
+    .leftJoin(resourceTopics, eq(resourceTopics.topicId, topics.id))
+    .where(eq(topics.userId, userId))
+    .groupBy(topics.id)
     .orderBy(asc(topics.name));
 }
 
@@ -86,6 +89,8 @@ export async function updateTopic(
   topicId: string,
   changes: { name?: string; color?: string },
 ) {
+  if (!isUuid(topicId)) return null;
+
   const name = changes.name?.trim();
   if (name !== undefined && !isValidName(name)) {
     return { kind: "invalid_name" } as const;
@@ -114,6 +119,8 @@ export async function updateTopic(
 
 /** Removes the topic from its resources; the resources themselves stay. */
 export async function deleteTopic(db: Db, userId: string, topicId: string) {
+  if (!isUuid(topicId)) return false;
+
   const deleted = await db
     .delete(topics)
     .where(and(eq(topics.userId, userId), eq(topics.id, topicId)))

@@ -3,9 +3,11 @@ import { getTranslations } from "next-intl/server";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { NewCardsField } from "@/components/settings/new-cards-field";
 import { TimezoneSelect } from "@/components/settings/timezone-select";
+import { TopicsSection } from "@/components/settings/topics-section";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import { Button } from "@/components/ui/button";
 import { DEFAULT_TIMEZONE } from "@/domain/timezone";
+import { listTopicsWithUsage } from "@/domain/topics";
 import { getUserSettings } from "@/domain/user-settings";
 import { signOut } from "@/lib/auth/actions";
 import { requireUserId } from "@/lib/auth/session";
@@ -17,11 +19,13 @@ export const instant = false;
 
 export default async function Settings() {
   const userId = await requireUserId();
-  const [t, tNav, cookieStore, settings] = await Promise.all([
+  const db = getDb();
+  const [t, tNav, cookieStore, settings, topics] = await Promise.all([
     getTranslations("settings"),
     getTranslations("nav"),
     cookies(),
-    getUserSettings(getDb(), userId),
+    getUserSettings(db, userId),
+    listTopicsWithUsage(db, userId),
   ]);
   const theme = resolveTheme(cookieStore.get(THEME_COOKIE)?.value);
   const timezone = settings?.timezone ?? DEFAULT_TIMEZONE;
@@ -45,6 +49,7 @@ export default async function Settings() {
           <ThemeSwitcher current={theme} />
         </div>
       </section>
+      <TopicsSection topics={topics} />
       <form action={signOut}>
         <Button type="submit" variant="secondary">
           {t("signOut")}
