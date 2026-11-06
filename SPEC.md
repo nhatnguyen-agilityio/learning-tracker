@@ -49,7 +49,7 @@ Metrics are calculated with SQL from the `reviews` table.
 
 ### F5 — Create cards through Claude (MCP, slice S6)
 
-1. In Settings, create an API token and follow the MCP connection guide
+1. In Claude Desktop, add a custom connector with the address shown in Settings, then sign in and allow access. Claude Code can use an API token instead
 2. In Claude: "Create review cards from my notes on article X"
 3. Claude finds the resource, reads the notes through MCP, proposes cards, then creates them as **pending**
 4. In the app, the "Pending" section lets the user edit, approve or delete each card, or "Approve all" per resource. Only approved cards enter the schedule, in the new-card queue, and they count toward the daily new-card limit
@@ -123,8 +123,8 @@ The MVP has only question-and-answer cards (markdown, code blocks). The data mod
 The app provides an MCP server so Claude can read data and create cards. The user's own Claude generates the cards, so the app does not call the Claude API.
 
 - **Endpoint:** `/api/mcp`, Streamable HTTP, running in the same codebase as the web app
-- **Auth:** a personal API token created in Settings, sent through `Authorization: Bearer <token>`; stored as a hash and revocable
-- **Client:** Claude Code and clients that can set headers. The claude.ai connector needs OAuth and waits for phase 2; users without a suitable client create cards by hand
+- **Auth:** OAuth 2.1 through the Supabase Auth OAuth Server, with dynamic client registration and a consent page in the app. Anyone can register a client, so the page only trusts the name of a client that returns to Claude's exact callback on `claude.ai` or `claude.com`, or to a local address; any other client is marked unverified and titled by its address. Connected apps can be disconnected in Settings. A personal API token created in Settings also works, sent through `Authorization: Bearer <token>`; stored as a hash and revocable
+- **Client:** Claude Desktop and claude.ai through a custom connector, signing in with OAuth. Claude Code and clients that can set headers can use an API token instead
 - **Scope:** each token reaches only its owner's data
 
 | Tool | Input | Result |
@@ -212,7 +212,7 @@ Every table has `user_id`. The `domain` layer is the main authorization layer: e
 | Vietnamese and English interface | Review reminders by email or push |
 | Terms, Privacy, account deletion, JSON export | Separate landing page |
 | SSRF protection, rate limit, per-account limits | Payments, ads |
-| MCP server (slice S6, right after the MVP) | MCP connection through OAuth; preview deploys, staging |
+| MCP server (slice S6, right after the MVP) | Preview deploys, staging |
 
 ### Milestones
 

@@ -8,6 +8,7 @@ describe("isPublicPath", () => {
     "/terms",
     "/privacy",
     "/test-sign-in",
+    "/.well-known/oauth-protected-resource",
   ])("should allow the path when the route is public: %s", (path) => {
     expect(isPublicPath(path)).toBe(true);
   });

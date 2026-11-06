@@ -87,7 +87,14 @@
     "tokenRevokeAction": "Revoke token",
     "tokenInvalidName": "Enter a name of up to 100 characters.",
     "tokenLimit": "You can have up to 10 active tokens. Revoke one to add another.",
-    "tokenFailed": "Could not create the token. Try again."
+    "tokenFailed": "Could not create the token. Try again.",
+    "mcpTitle": "Connect Claude",
+    "mcpStep1": "In Claude Desktop, open Settings → Connectors → Add custom connector.",
+    "mcpStep2": "Paste this address:",
+    "mcpStep3": "Choose Connect, sign in here and allow access. Cards Claude makes wait in Pending review.",
+    "mcpNote": "Needs a Claude plan with custom connectors. In Claude Code, use an API token instead.",
+    "connectedApps": "Connected apps",
+    "disconnect": "Disconnect"
   },
   "resourceForm": {
     "add": "Add a source",
@@ -361,6 +368,27 @@
         "title": "Your rights",
         "body": "You can export all of your data as JSON and delete your account in Settings. Deleting your account removes your data from the system at once, and it is gone from backups after 14 days."
       }
-    }
+    },
+    "claudeTitle": "Connecting Claude",
+    "claudeBody": "If you connect Claude or another app, it can read your sources, notes, cards and stats, add sources and notes, and propose cards. What it reads is then handled under that app's own terms. You can disconnect it in Settings."
+  },
+  "oauth": {
+    "title": "Connect {client} to Learning Tracker?",
+    "account": "Signed in as {email}",
+    "canTitle": "It will be able to:",
+    "canRead": "Read your sources, notes, cards and study stats",
+    "canAdd": "Add sources and notes",
+    "canPropose": "Propose cards, which wait for your approval",
+    "cannotDelete": "It can't delete anything.",
+    "returnsTo": "You will return to {address}",
+    "unverifiedTitle": "Unverified app",
+    "unverifiedName": "It calls itself “{name}”, which Learning Tracker can't confirm.",
+    "unverifiedBody": "Allow only if you started this connection and you trust {host}.",
+    "allow": "Allow",
+    "deny": "Deny",
+    "failed": "That didn't work. Try again.",
+    "unnamedApp": "This app",
+    "invalidTitle": "This link doesn't work",
+    "invalidBody": "It may have expired. Start connecting again from your app."
   }
 }

@@ -8,9 +8,9 @@ export async function connectMcp(page: Page, baseURL: string) {
   await page.getByLabel("New token name").fill("E2E");
   await expect(async () => {
     await page.getByRole("button", { name: "Create token" }).click();
-    await expect(page.locator("code")).toBeVisible({ timeout: 2000 });
+    await expect(page.getByText(/^lt_/)).toBeVisible({ timeout: 2000 });
   }).toPass();
-  const token = await page.locator("code").textContent();
+  const token = await page.getByText(/^lt_/).textContent();
 
   const client = new Client({ name: "e2e", version: "1.0.0" });
   await client.connect(

@@ -23,12 +23,12 @@ test.beforeEach(async ({ page }) => {
 test("should show a new token only once", async ({ page }) => {
   await createToken(page, "Laptop");
 
-  const token = await page.locator("code").textContent();
+  const token = await page.getByText(/^lt_/).textContent();
   expect(token).toMatch(/^lt_/);
   await expect(row(page, "Laptop")).toContainText("Never used");
 
   await page.getByRole("button", { name: "I saved it" }).click();
-  await expect(page.locator("code")).toBeHidden();
+  await expect(page.getByText(/^lt_/)).toBeHidden();
 
   await page.reload();
   await expect(row(page, "Laptop")).toBeVisible();
@@ -38,9 +38,9 @@ test("should show a new token only once", async ({ page }) => {
 test("should copy the token", async ({ page, context }) => {
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await createToken(page, "Copied");
-  const token = await page.locator("code").textContent();
+  const token = await page.getByText(/^lt_/).textContent();
 
-  await page.getByRole("button", { name: "Copy" }).click();
+  await page.getByRole("button", { name: "Copy" }).last().click();
 
   await expect(page.getByRole("button", { name: "Copied" })).toBeVisible();
   expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(token);

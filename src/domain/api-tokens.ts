@@ -5,7 +5,7 @@ import type { Db } from "@/lib/db/types";
 import { MAX_ACTIVE_TOKENS, MAX_TOKEN_NAME_LENGTH } from "./token-limits";
 import { isUuid } from "./uuid";
 
-const TOKEN_PREFIX = "lt_";
+export const TOKEN_PREFIX = "lt_";
 const TOKEN_BYTES = 32;
 
 const tokenFields = {
