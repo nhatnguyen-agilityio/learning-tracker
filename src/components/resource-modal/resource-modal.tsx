@@ -139,10 +139,18 @@ function ResourceForm({
     resource?.thumbnailUrl ?? null,
   );
   const [status, setStatus] = useState(resource?.status ?? "want");
-  const [allTopics, setAllTopics] = useState(topics);
+  const [createdTopics, setCreatedTopics] = useState<TopicOption[]>([]);
   const [picked, setPicked] = useState(resource?.topics ?? []);
+  const [creatingTopic, setCreatingTopic] = useState(false);
   const [saveFailed, setSaveFailed] = useState(false);
   const [saving, startSaving] = useTransition();
+
+  // Reads the prop on every render: Library refreshes it after a save.
+  const knownIds = new Set(topics.map((topic) => topic.id));
+  const allTopics = [
+    ...topics,
+    ...createdTopics.filter((topic) => !knownIds.has(topic.id)),
+  ];
 
   async function checkLink() {
     const link = url.trim();
@@ -299,12 +307,9 @@ function ResourceForm({
               topics={allTopics}
               picked={picked}
               onChange={setPicked}
+              onCreatingChange={setCreatingTopic}
               onTopicCreated={(topic) =>
-                setAllTopics((current) =>
-                  current.some((item) => item.id === topic.id)
-                    ? current
-                    : [...current, topic],
-                )
+                setCreatedTopics((current) => [...current, topic])
               }
             />
           </div>
@@ -330,7 +335,11 @@ function ResourceForm({
           {t("cancel")}
         </Button>
         {step === "details" ? (
-          <Button type="submit" disabled={saving} aria-busy={saving}>
+          <Button
+            type="submit"
+            disabled={saving || creatingTopic}
+            aria-busy={saving}
+          >
             {saving ? t("saving") : t("save")}
           </Button>
         ) : null}

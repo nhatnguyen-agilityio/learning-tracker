@@ -5,6 +5,7 @@ import { createResource, getResource } from "./resources";
 import {
   createTopic,
   deleteTopic,
+  listResourcesWithTopics,
   listResourceTopics,
   listTopics,
   MAX_TOPIC_NAME_LENGTH,
@@ -240,5 +241,40 @@ describe("linking topics to resources", () => {
       await setResourceTopics(db, userB, resourceId, [go]);
 
       expect(await listResourceTopics(db, userA, resourceId)).toEqual([]);
+    }));
+});
+
+describe("listing resources with topics", () => {
+  it("should return each resource with its topics", () =>
+    withTestDb(async (db) => {
+      const rust = await addTopic(db, userA, "Rust");
+      const go = await addTopic(db, userA, "Go");
+      const resourceId = await addResource(db, userA);
+      await setResourceTopics(db, userA, resourceId, [rust, go]);
+
+      const rows = await listResourcesWithTopics(db, userA);
+      const row = rows.find((resource) => resource.id === resourceId);
+
+      expect(row?.topics.map((topic) => topic.name)).toEqual(["Go", "Rust"]);
+    }));
+
+  it("should return an empty topic list when a resource has none", () =>
+    withTestDb(async (db) => {
+      const resourceId = await addResource(db, userA);
+
+      const rows = await listResourcesWithTopics(db, userA);
+
+      expect(rows.find((row) => row.id === resourceId)?.topics).toEqual([]);
+    }));
+
+  it("should not return resources or topics of another user", () =>
+    withTestDb(async (db) => {
+      const go = await addTopic(db, userB, "Go");
+      const resourceId = await addResource(db, userB);
+      await setResourceTopics(db, userB, resourceId, [go]);
+
+      const rows = await listResourcesWithTopics(db, userA);
+
+      expect(rows.map((row) => row.id)).not.toContain(resourceId);
     }));
 });

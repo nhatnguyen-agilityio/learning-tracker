@@ -9,21 +9,31 @@ const TEST_USERS: Record<string, string> = {
   b: "user-b@example.test",
 };
 const TEST_PASSWORD = "local-test-password";
+// A throwaway account for tests that need a user with no data.
+const NEW_USER = "new";
 
 export async function GET(request: NextRequest) {
-  const email = TEST_USERS[request.nextUrl.searchParams.get("user") ?? "a"];
+  const user = request.nextUrl.searchParams.get("user") ?? "a";
+  const email = TEST_USERS[user];
 
-  if (!canUseTestSignIn(process.env) || !email) {
+  if (!canUseTestSignIn(process.env) || (!email && user !== NEW_USER)) {
     return new NextResponse(null, { status: 404 });
   }
 
   const supabase = await createClient();
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password: TEST_PASSWORD,
-  });
+  const { data, error } = email
+    ? await supabase.auth.signInWithPassword({
+        email,
+        password: TEST_PASSWORD,
+      })
+    : await supabase.auth.signUp({
+        email: `e2e-${crypto.randomUUID()}@example.test`,
+        password: TEST_PASSWORD,
+      });
 
-  if (error) return new NextResponse(error.message, { status: 500 });
+  if (error || !data.user) {
+    return new NextResponse(error?.message, { status: 500 });
+  }
 
   await afterSignIn(data.user.id);
   return NextResponse.redirect(new URL("/", request.url));
