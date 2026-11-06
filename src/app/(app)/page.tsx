@@ -67,7 +67,9 @@ export default async function Today() {
         <section className="flex flex-col gap-3 rounded-lg border border-border bg-card px-4 py-6">
           <div>
             <p className="text-4xl font-semibold">{waiting}</p>
-            <p className="text-sm text-muted-foreground">{t("dueLabel", { count: waiting })}</p>
+            <p className="text-sm text-muted-foreground">
+              {t("dueLabel", { count: waiting })}
+            </p>
           </div>
           <Button asChild size="lg" className="w-full">
             <Link href="/review">{tReview("start")}</Link>
