@@ -41,10 +41,12 @@ function Face({
 
 export function ReviewCard({
   card,
+  again,
   flipped,
   onFlip,
 }: {
   card: ReviewCardData;
+  again: boolean;
   flipped: boolean;
   onFlip: () => void;
 }) {
@@ -66,7 +68,7 @@ export function ReviewCard({
         className={`grid min-h-80 transition-transform duration-300 transform-3d motion-reduce:transition-none ${flipped ? "rotate-y-180" : ""}`}
       >
         <Face
-          label={null}
+          label={again ? t("again") : null}
           source={source}
           content={card.front}
           hidden={flipped}
