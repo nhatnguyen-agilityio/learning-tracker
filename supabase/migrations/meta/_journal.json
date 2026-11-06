@@ -36,6 +36,13 @@
       "when": 1793932695110,
       "tag": "20261106023815_add_rate_limits",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793950700153,
+      "tag": "20261106073820_add_token_created_at",
+      "breakpoints": true
     }
   ]
 }
