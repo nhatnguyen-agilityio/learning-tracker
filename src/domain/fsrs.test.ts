@@ -1,3 +1,4 @@
+import { fsrs, Rating } from "ts-fsrs";
 import { describe, expect, it } from "vitest";
 import { type CardSchedule, nextSchedule, type ReviewRating } from "./fsrs";
 
@@ -98,6 +99,31 @@ describe("nextSchedule on a reviewed card", () => {
 });
 
 describe("nextSchedule results", () => {
+  it("should not depend on scheduled_days, which is not stored", () => {
+    const scheduler = fsrs({ enable_fuzz: false, enable_short_term: true });
+    const card = reviewCard();
+    const input = {
+      due: card.due,
+      stability: card.stability,
+      difficulty: card.difficulty,
+      learning_steps: card.learningSteps,
+      reps: card.reps,
+      lapses: card.lapses,
+      state: "Review" as const,
+      last_review: card.lastReview ?? undefined,
+    };
+    const later = new Date(card.due.getTime() + 2 * DAY);
+
+    const run = (scheduledDays: number) =>
+      scheduler.next(
+        { ...input, scheduled_days: scheduledDays },
+        later,
+        Rating.Good,
+      ).card;
+
+    expect(run(0)).toEqual(run(30));
+  });
+
   it("should give the same result when the same rating runs twice", () => {
     const card = reviewCard();
 

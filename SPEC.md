@@ -109,7 +109,7 @@ The MVP has only question-and-answer cards (markdown, code blocks). The data mod
 
 - **Algorithm:** FSRS through `ts-fsrs`, with learning steps on so Forgot cards return within the session
 - **3 ratings:** Forgot → Again, Vaguely → Hard, Remembered → Good (Easy is hidden)
-- **New cards:** at most 20 per day, adjustable in Settings; due cards have no limit. While there is a backlog of due cards, new cards pause
+- **New cards:** at most 20 per day, adjustable in Settings; due cards have no limit. While there is a backlog (more than 50 due cards), new cards pause
 - **Day:** follows the user's time zone; a new day starts at 04:00
 - **Streak:** consecutive days with at least 1 review. A day with no due cards neither breaks the streak nor adds to it
 - **Suspended cards:** a suspended card stays out of the schedule until it is turned back on
