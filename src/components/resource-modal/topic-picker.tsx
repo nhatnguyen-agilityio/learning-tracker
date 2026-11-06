@@ -13,6 +13,7 @@ type TopicPickerProps = {
   picked: TopicOption[];
   onChange: (picked: TopicOption[]) => void;
   onTopicCreated: (topic: TopicOption) => void;
+  onCreatingChange: (creating: boolean) => void;
 };
 
 export function TopicPicker({
@@ -20,6 +21,7 @@ export function TopicPicker({
   picked,
   onChange,
   onTopicCreated,
+  onCreatingChange,
 }: TopicPickerProps) {
   const t = useTranslations("resourceForm");
   const [query, setQuery] = useState("");
@@ -43,8 +45,10 @@ export function TopicPicker({
   }
 
   function create() {
+    onCreatingChange(true);
     startTransition(async () => {
       const result = await addTopic(trimmed);
+      onCreatingChange(false);
       if (result.kind !== "created" && result.kind !== "duplicate") return;
 
       onTopicCreated(result.topic);

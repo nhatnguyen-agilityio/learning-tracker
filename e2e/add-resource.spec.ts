@@ -30,7 +30,9 @@ test("should add a resource when the link gives no metadata", async ({
   await enterLink(page, uniqueLink());
 
   await expect(page.getByText(/could not read this link/)).toBeVisible();
-  await expect(page.getByTestId("thumbnail-fallback")).toBeVisible();
+  await expect(
+    page.getByRole("dialog").getByTestId("thumbnail-fallback"),
+  ).toBeVisible();
 
   await page.getByLabel("Title").fill("A guide");
   await page.getByRole("button", { name: "Save source" }).click();
@@ -61,7 +63,7 @@ test("should warn and link to the resource when the link is a duplicate", async 
   await expect(page.getByRole("alert")).toContainText(
     "already in your library",
   );
-  await expect(page.getByText("Saved once")).toBeVisible();
+  await expect(page.getByRole("dialog").getByText("Saved once")).toBeVisible();
   await expect(
     page.getByRole("link", { name: "Open existing source" }),
   ).toHaveAttribute("href", /^\/library\/[0-9a-f-]+$/);

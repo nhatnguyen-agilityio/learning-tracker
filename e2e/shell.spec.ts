@@ -15,7 +15,9 @@ async function expectEachPageOpens(page: import("@playwright/test").Page) {
     await nav.getByRole("link", { name: link }).click();
 
     await expect(page).toHaveURL(path);
-    await expect(page.getByRole("heading", { name: link })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: link, exact: true }),
+    ).toBeVisible();
     await expect(nav.getByRole("link", { name: link })).toHaveAttribute(
       "aria-current",
       "page",

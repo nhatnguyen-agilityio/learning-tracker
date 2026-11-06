@@ -1,7 +1,7 @@
 import { and, asc, eq, inArray, ne, sql } from "drizzle-orm";
 import { resourceTopics, topics } from "@/lib/db/schema";
 import type { Db } from "@/lib/db/types";
-import { getResource } from "./resources";
+import { getResource, listResources } from "./resources";
 
 export const TOPIC_COLORS = [
   "topic-1",
@@ -171,4 +171,29 @@ export function setResourceTopics(
 
     return listResourceTopics(tx, userId, resourceId);
   });
+}
+
+export type ResourceWithTopics = Awaited<
+  ReturnType<typeof listResourcesWithTopics>
+>[number];
+
+/** Two queries, so the cost doesn't grow with the number of resources. */
+export async function listResourcesWithTopics(db: Db, userId: string) {
+  const [rows, links] = await Promise.all([
+    listResources(db, userId),
+    db
+      .select({ resourceId: resourceTopics.resourceId, ...topicFields })
+      .from(resourceTopics)
+      .innerJoin(topics, eq(topics.id, resourceTopics.topicId))
+      .where(eq(resourceTopics.userId, userId))
+      .orderBy(asc(topics.name)),
+  ]);
+
+  const byResource = Map.groupBy(links, (link) => link.resourceId);
+  return rows.map((resource) => ({
+    ...resource,
+    topics: (byResource.get(resource.id) ?? []).map(
+      ({ id, name, color }): Topic => ({ id, name, color }),
+    ),
+  }));
 }

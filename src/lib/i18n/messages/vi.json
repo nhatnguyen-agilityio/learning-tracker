@@ -69,5 +69,12 @@
     "save": "Lưu nguồn",
     "saving": "Đang lưu",
     "saveError": "Không lưu được nguồn. Nội dung bạn nhập vẫn còn đây."
+  },
+  "library": {
+    "emptyTitle": "Thư viện còn trống",
+    "emptyBody": "Thêm bài viết, video hoặc khoá học bạn đang theo. Thẻ ôn sẽ xuất hiện ở đây.",
+    "errorTitle": "Không tải được thư viện",
+    "errorBody": "Kiểm tra kết nối rồi thử lại.",
+    "retry": "Thử lại"
   }
 }

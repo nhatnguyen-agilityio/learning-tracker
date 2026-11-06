@@ -69,5 +69,12 @@
     "save": "Save source",
     "saving": "Saving",
     "saveError": "Could not save this source. Your input is still here."
+  },
+  "library": {
+    "emptyTitle": "Your library is empty",
+    "emptyBody": "Add an article, video or course you are following. Your review cards will show up here.",
+    "errorTitle": "Could not load your library",
+    "errorBody": "Check your connection and try again.",
+    "retry": "Try again"
   }
 }
