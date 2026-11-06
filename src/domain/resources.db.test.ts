@@ -75,6 +75,13 @@ describe("reading resources across users", () => {
 
 const link = "https://example.test/guide";
 
+describe("reading one resource", () => {
+  it("should return null when the resource id is not a UUID", () =>
+    withTestDb(async (db) => {
+      expect(await getResource(db, userA, "not-a-uuid")).toBeNull();
+    }));
+});
+
 describe("creating resources", () => {
   it("should create the resource when the link is new", () =>
     withTestDb(async (db) => {

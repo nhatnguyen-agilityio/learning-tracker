@@ -2,6 +2,7 @@ import { and, count, desc, eq } from "drizzle-orm";
 import { resources } from "@/lib/db/schema";
 import type { Db } from "@/lib/db/types";
 import { normalizeUrl } from "./normalize-url";
+import { isUuid } from "./uuid";
 
 export const MAX_RESOURCES_PER_USER = 2000;
 export const MAX_URL_LENGTH = 2048;
@@ -29,6 +30,8 @@ export function listResources(db: Db, userId: string) {
 
 /** Returns null for another user's resource, the same as for a missing one. */
 export async function getResource(db: Db, userId: string, resourceId: string) {
+  if (!isUuid(resourceId)) return null;
+
   const [resource] = await db
     .select(resourceFields)
     .from(resources)

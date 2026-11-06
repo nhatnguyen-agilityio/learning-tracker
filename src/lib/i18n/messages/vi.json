@@ -82,5 +82,15 @@
     "all": "Tất cả",
     "noResult": "Không có nguồn nào khớp.",
     "clearFilters": "Xoá bộ lọc"
+  },
+  "resourceDetail": {
+    "openLink": "Mở link gốc",
+    "edit": "Sửa",
+    "progress": "Tiến độ",
+    "notes": "Ghi chú",
+    "cards": "Thẻ",
+    "notFound": "Không tìm thấy nguồn này",
+    "backToLibrary": "Về Library",
+    "errorTitle": "Không tải được nguồn này"
   }
 }

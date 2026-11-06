@@ -82,5 +82,15 @@
     "all": "All",
     "noResult": "No sources match.",
     "clearFilters": "Clear filters"
+  },
+  "resourceDetail": {
+    "openLink": "Open original link",
+    "edit": "Edit",
+    "progress": "Progress",
+    "notes": "Notes",
+    "cards": "Cards",
+    "notFound": "This source doesn't exist",
+    "backToLibrary": "Back to Library",
+    "errorTitle": "Could not load this source"
   }
 }

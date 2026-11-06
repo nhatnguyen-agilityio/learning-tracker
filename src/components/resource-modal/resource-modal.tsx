@@ -3,7 +3,12 @@
 import { Loader2Icon } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { type FormEvent, useState, useTransition } from "react";
+import {
+  type ComponentProps,
+  type FormEvent,
+  useState,
+  useTransition,
+} from "react";
 import {
   editResource,
   lookupLink,
@@ -40,12 +45,14 @@ type ResourceModalProps = {
   /** Opens the modal in edit mode, with the link locked. */
   resource?: EditableResource;
   triggerLabel?: string;
+  triggerVariant?: ComponentProps<typeof Button>["variant"];
 };
 
 export function ResourceModal({
   topics,
   resource,
   triggerLabel,
+  triggerVariant,
 }: ResourceModalProps) {
   const t = useTranslations("resourceForm");
   const [open, setOpen] = useState(false);
@@ -59,7 +66,7 @@ export function ResourceModal({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button>{triggerLabel ?? t("add")}</Button>
+        <Button variant={triggerVariant}>{triggerLabel ?? t("add")}</Button>
       </DialogTrigger>
       <DialogContent className="max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
