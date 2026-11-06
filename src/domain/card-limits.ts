@@ -1,6 +1,7 @@
 export const MAX_CARDS_PER_USER = 10000;
 export const MAX_CARD_SIDE_BYTES = 10 * 1024;
 export const CARDS_PAGE_SIZE = 100;
+export const MAX_CARDS_PER_CALL = 50;
 
 export type CardSideError = "empty" | "too_large" | null;
 

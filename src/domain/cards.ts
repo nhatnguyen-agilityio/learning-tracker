@@ -1,7 +1,12 @@
-import { and, asc, count, desc, eq, isNull, ne } from "drizzle-orm";
+import { and, asc, count, desc, eq, isNull, ne, sql } from "drizzle-orm";
 import { cardSchedules, cards, resources, reviews } from "@/lib/db/schema";
 import type { Db } from "@/lib/db/types";
-import { MAX_CARDS_PER_USER, validateCard } from "./card-limits";
+import {
+  type CardErrors,
+  MAX_CARDS_PER_CALL,
+  MAX_CARDS_PER_USER,
+  validateCard,
+} from "./card-limits";
 import { getResource } from "./resources";
 import { isUuid } from "./uuid";
 
@@ -215,5 +220,62 @@ export async function deleteCard(db: Db, userId: string, cardId: string) {
       await tx.delete(cards).where(owned);
     }
     return card;
+  });
+}
+
+type CardSides = { front: string; back: string };
+
+/**
+ * Cards from MCP wait for approval: they are pending, with no schedule, so they
+ * stay out of reviews. All are saved or none. Returns null for another user's
+ * resource, the same as for a missing one.
+ */
+export async function createPendingCards(
+  db: Db,
+  userId: string,
+  input: { resourceId?: string; cards: CardSides[] },
+) {
+  const total = input.cards.length;
+  if (total === 0 || total > MAX_CARDS_PER_CALL) {
+    return { kind: "invalid_count" } as const;
+  }
+
+  const invalid = input.cards.flatMap((card, index) => {
+    const errors: CardErrors | null = validateCard(card);
+    return errors ? [{ index, errors }] : [];
+  });
+  if (invalid.length > 0) return { kind: "invalid", cards: invalid } as const;
+
+  return db.transaction(async (tx) => {
+    // Two calls at once must not both see room under the limit.
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${userId}))`);
+
+    if (input.resourceId) {
+      const resource = await getResource(tx, userId, input.resourceId);
+      if (!resource) return null;
+    }
+
+    const [{ existing }] = await tx
+      .select({ existing: count() })
+      .from(cards)
+      .where(and(eq(cards.userId, userId), isNull(cards.deletedAt)));
+    if (existing + total > MAX_CARDS_PER_USER) {
+      return { kind: "limit_reached" } as const;
+    }
+
+    const created = await tx
+      .insert(cards)
+      .values(
+        input.cards.map(({ front, back }) => ({
+          userId,
+          resourceId: input.resourceId,
+          front: front.trim(),
+          back: back.trim(),
+          status: "pending" as const,
+          source: "mcp" as const,
+        })),
+      )
+      .returning({ id: cards.id });
+    return { kind: "created", ids: created.map(({ id }) => id) } as const;
   });
 }
