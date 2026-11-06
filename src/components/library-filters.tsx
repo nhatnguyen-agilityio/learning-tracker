@@ -80,7 +80,7 @@ export function LibraryFilters({ topics }: { topics: TopicOption[] }) {
         <div
           role="group"
           aria-label={tForm("topics")}
-          className="flex flex-wrap gap-2"
+          className="flex gap-2 overflow-x-auto pb-1"
         >
           {topics.map((option) => (
             <Button
