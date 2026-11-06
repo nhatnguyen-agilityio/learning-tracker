@@ -59,7 +59,15 @@
     "save": "Save",
     "yourData": "Your data",
     "exportHint": "Download a JSON file with all your sources, notes, cards and review history.",
-    "export": "Export data as JSON"
+    "export": "Export data as JSON",
+    "deleteAccount": "Delete account",
+    "deleteAccountHint": "Deletes all data in this account. This cannot be undone.",
+    "deleteAccountTitle": "Delete your account?",
+    "deleteAccountBody": "All your sources, notes, cards and review history will be deleted and cannot be recovered. Export your data first if you want a copy.",
+    "deleteAccountType": "Type DELETE to confirm",
+    "deleteAccountWord": "DELETE",
+    "deleteAccountAction": "Delete my account",
+    "deleteAccountFailed": "Could not delete your account. Try again."
   },
   "resourceForm": {
     "add": "Add a source",
@@ -323,7 +331,7 @@
       },
       "s6": {
         "title": "Your rights",
-        "body": "You can export all of your data as JSON and delete your account in Settings. Deleting your account deletes all of your data."
+        "body": "You can export all of your data as JSON and delete your account in Settings. Deleting your account removes your data from the system at once, and it is gone from backups after 14 days."
       }
     }
   }
