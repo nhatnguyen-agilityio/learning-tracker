@@ -5,6 +5,7 @@ import { SEEDED_USERS, withTestDb } from "@/lib/db/test-db";
 import type { Db } from "@/lib/db/types";
 import {
   createResource,
+  findResourceByUrl,
   getResource,
   listResources,
   MAX_RESOURCES_PER_USER,
@@ -239,6 +240,29 @@ describe("creating resources", () => {
 
       expect(refused).toEqual({ kind: "limit_reached" });
       expect(otherUser.kind).toBe("created");
+    }));
+});
+
+describe("finding resources by link", () => {
+  it("should return the resource when finding a link the user already has", () =>
+    withTestDb(async (db) => {
+      await createResource(db, userA, { url: link, title: "Guide" });
+
+      const found = await findResourceByUrl(db, userA, `${link}/?utm_source=x`);
+
+      expect(found).toMatchObject({ title: "Guide" });
+    }));
+
+  it("should return null when another user has the link", () =>
+    withTestDb(async (db) => {
+      await createResource(db, userB, { url: link, title: "Guide" });
+
+      expect(await findResourceByUrl(db, userA, link)).toBeNull();
+    }));
+
+  it("should return null when the link is not valid", () =>
+    withTestDb(async (db) => {
+      expect(await findResourceByUrl(db, userA, "not a link")).toBeNull();
     }));
 });
 

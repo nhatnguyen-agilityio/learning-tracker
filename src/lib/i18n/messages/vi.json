@@ -31,5 +31,43 @@
     "appearance": "Giao diện",
     "light": "Sáng",
     "dark": "Tối"
+  },
+  "resourceForm": {
+    "add": "Thêm nguồn",
+    "edit": "Sửa nguồn",
+    "link": "Dán link",
+    "linkHint": "App sẽ tự lấy tiêu đề, ảnh và loại.",
+    "linkError": "Link chưa đúng. Link phải bắt đầu bằng http hoặc https.",
+    "fetching": "Đang lấy tiêu đề và ảnh từ link này",
+    "duplicate": "Link này đã có trong thư viện.",
+    "openExisting": "Mở nguồn đã có",
+    "metadataFailed": "Không lấy được thông tin từ link này. Bạn tự nhập tiêu đề, rồi vẫn lưu được.",
+    "thumbnailFound": "Ảnh lấy từ link",
+    "thumbnailFallback": "Ảnh thay thế theo loại nguồn",
+    "title": "Tiêu đề",
+    "titlePlaceholder": "Nhập tiêu đề",
+    "titleError": "Tiêu đề không được để trống.",
+    "type": "Loại",
+    "types": {
+      "article": "Bài viết",
+      "video": "Video",
+      "course": "Khoá học",
+      "doc": "Docs",
+      "other": "Khác"
+    },
+    "topics": "Chủ đề",
+    "topicPlaceholder": "Tìm hoặc tạo chủ đề",
+    "createTopic": "Tạo \"{name}\"",
+    "removeTopic": "Bỏ {name}",
+    "status": "Trạng thái",
+    "statuses": {
+      "want": "Muốn học",
+      "learning": "Đang học",
+      "done": "Xong"
+    },
+    "cancel": "Huỷ",
+    "save": "Lưu nguồn",
+    "saving": "Đang lưu",
+    "saveError": "Không lưu được nguồn. Nội dung bạn nhập vẫn còn đây."
   }
 }

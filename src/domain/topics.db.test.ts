@@ -8,6 +8,7 @@ import {
   listResourceTopics,
   listTopics,
   MAX_TOPIC_NAME_LENGTH,
+  nextTopicColor,
   setResourceTopics,
   updateTopic,
 } from "./topics";
@@ -84,6 +85,16 @@ describe("creating topics", () => {
         expect(result).toEqual({ kind: "invalid_color" });
       }),
   );
+});
+
+describe("nextTopicColor", () => {
+  it.each([
+    [0, "topic-1"],
+    [7, "topic-8"],
+    [8, "topic-1"],
+  ])("should pick the color when the user has %i topics", (count, expected) => {
+    expect(nextTopicColor(count)).toBe(expected);
+  });
 });
 
 describe("reading topics", () => {
@@ -170,7 +181,8 @@ describe("deleting topics", () => {
       const otherId = await addTopic(db, userB, "Go");
 
       expect(await deleteTopic(db, userA, otherId)).toBe(false);
-      expect(await listTopics(db, userB)).toHaveLength(1);
+      const kept = await listTopics(db, userB);
+      expect(kept.map((topic) => topic.id)).toContain(otherId);
     }));
 });
 

@@ -31,5 +31,43 @@
     "appearance": "Appearance",
     "light": "Light",
     "dark": "Dark"
+  },
+  "resourceForm": {
+    "add": "Add a source",
+    "edit": "Edit source",
+    "link": "Paste a link",
+    "linkHint": "We fetch the title, image and type for you.",
+    "linkError": "This link is not valid. It must start with http or https.",
+    "fetching": "Fetching title and image from this link",
+    "duplicate": "This link is already in your library.",
+    "openExisting": "Open existing source",
+    "metadataFailed": "We could not read this link. Enter a title yourself and you can still save it.",
+    "thumbnailFound": "Image from the link",
+    "thumbnailFallback": "Placeholder image for this type",
+    "title": "Title",
+    "titlePlaceholder": "Enter a title",
+    "titleError": "The title cannot be empty.",
+    "type": "Type",
+    "types": {
+      "article": "Article",
+      "video": "Video",
+      "course": "Course",
+      "doc": "Docs",
+      "other": "Other"
+    },
+    "topics": "Topics",
+    "topicPlaceholder": "Search or create a topic",
+    "createTopic": "Create \"{name}\"",
+    "removeTopic": "Remove {name}",
+    "status": "Status",
+    "statuses": {
+      "want": "Want to learn",
+      "learning": "Learning",
+      "done": "Done"
+    },
+    "cancel": "Cancel",
+    "save": "Save source",
+    "saving": "Saving",
+    "saveError": "Could not save this source. Your input is still here."
   }
 }
