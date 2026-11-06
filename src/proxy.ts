@@ -37,6 +37,12 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(signIn);
   }
 
+  // A page that grants access must not run inside someone else's frame.
+  if (pathname.startsWith("/oauth/")) {
+    response.headers.set("x-frame-options", "DENY");
+    response.headers.set("content-security-policy", "frame-ancestors 'none'");
+  }
+
   return response;
 }
 

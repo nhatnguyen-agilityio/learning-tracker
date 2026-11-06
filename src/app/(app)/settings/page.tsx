@@ -1,8 +1,10 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { ConnectedApps } from "@/components/settings/connected-apps";
 import { DeleteAccountSection } from "@/components/settings/delete-account-section";
+import { McpGuide } from "@/components/settings/mcp-guide";
 import { NewCardsField } from "@/components/settings/new-cards-field";
 import { TimezoneSelect } from "@/components/settings/timezone-select";
 import { TokensSection } from "@/components/settings/tokens-section";
@@ -14,8 +16,10 @@ import { DEFAULT_TIMEZONE } from "@/domain/timezone";
 import { listTopicsWithUsage } from "@/domain/topics";
 import { getUserSettings } from "@/domain/user-settings";
 import { signOut } from "@/lib/auth/actions";
+import { createClient } from "@/lib/auth/server";
 import { requireUserId } from "@/lib/auth/session";
 import { getDb } from "@/lib/db/client";
+import { MCP_PATH, publicOrigin } from "@/lib/mcp/metadata";
 import { resolveTheme, THEME_COOKIE } from "@/lib/theme/theme";
 
 // Every signed-in page depends on the request, so it waits for the server.
@@ -35,6 +39,9 @@ export default async function Settings() {
       listTokens(db, userId),
       getLocale(),
     ]);
+  const requestHeaders = await headers();
+  const origin = publicOrigin(requestHeaders, "http://localhost:3000");
+  const { data: grants } = await (await createClient()).auth.oauth.listGrants();
   const theme = resolveTheme(cookieStore.get(THEME_COOKIE)?.value);
   const timezone = settings?.timezone ?? DEFAULT_TIMEZONE;
   const formatDate = new Intl.DateTimeFormat(locale, {
@@ -62,6 +69,13 @@ export default async function Settings() {
         </div>
       </section>
       <TopicsSection topics={topics} />
+      <McpGuide url={`${origin}${MCP_PATH}`} />
+      <ConnectedApps
+        apps={(grants ?? []).map(({ client }) => ({
+          id: client.id,
+          name: client.name || client.id,
+        }))}
+      />
       <TokensSection
         tokens={tokens.map((token) => ({
           id: token.id,

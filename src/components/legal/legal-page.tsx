@@ -46,6 +46,12 @@ export async function LegalPage({ page }: { page: "terms" | "privacy" }) {
           <p className="text-sm">{t(`${page}Sections.${section}.body`)}</p>
         </section>
       ))}
+      {page === "privacy" ? (
+        <section className="flex flex-col gap-1">
+          <h2 className="font-semibold">{t("claudeTitle")}</h2>
+          <p className="text-sm">{t("claudeBody")}</p>
+        </section>
+      ) : null}
       <section className="flex flex-col gap-1">
         <h2 className="font-semibold">{t("contactTitle")}</h2>
         <a

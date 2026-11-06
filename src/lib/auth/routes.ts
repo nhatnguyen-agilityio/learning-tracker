@@ -6,6 +6,7 @@ const PUBLIC_PATHS = [
   "/test-sign-in",
   "/terms",
   "/privacy",
+  "/.well-known",
 ];
 
 export function isPublicPath(pathname: string): boolean {

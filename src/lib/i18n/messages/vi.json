@@ -87,7 +87,14 @@
     "tokenRevokeAction": "Thu hồi token",
     "tokenInvalidName": "Nhập tên dài tối đa 100 ký tự.",
     "tokenLimit": "Bạn có tối đa 10 token đang hoạt động. Hãy thu hồi một token để thêm mới.",
-    "tokenFailed": "Không tạo được token. Thử lại."
+    "tokenFailed": "Không tạo được token. Thử lại.",
+    "mcpTitle": "Kết nối Claude",
+    "mcpStep1": "Trong Claude Desktop, mở Settings → Connectors → Add custom connector.",
+    "mcpStep2": "Dán địa chỉ này:",
+    "mcpStep3": "Chọn Connect, đăng nhập tại đây và cho phép truy cập. Thẻ Claude tạo sẽ nằm ở mục Chờ duyệt.",
+    "mcpNote": "Cần gói Claude có custom connector. Trong Claude Code, hãy dùng API token.",
+    "connectedApps": "Ứng dụng đã kết nối",
+    "disconnect": "Ngắt kết nối"
   },
   "resourceForm": {
     "add": "Thêm nguồn",
@@ -361,6 +368,24 @@
         "title": "Quyền của bạn",
         "body": "Bạn có thể xuất toàn bộ dữ liệu dưới dạng JSON và xoá tài khoản trong Cài đặt. Xoá tài khoản sẽ xoá dữ liệu khỏi hệ thống ngay lập tức, và dữ liệu hết hẳn khỏi bản sao lưu sau 14 ngày."
       }
-    }
+    },
+    "claudeTitle": "Kết nối Claude",
+    "claudeBody": "Nếu bạn kết nối Claude hoặc ứng dụng khác, ứng dụng đó có thể đọc nguồn, ghi chú, thẻ và thống kê, thêm nguồn và ghi chú, và đề xuất thẻ. Những gì ứng dụng đọc được sẽ tuân theo điều khoản của chính ứng dụng đó. Bạn có thể ngắt kết nối trong Cài đặt."
+  },
+  "oauth": {
+    "title": "Kết nối {client} với Learning Tracker?",
+    "account": "Đang đăng nhập bằng {email}",
+    "canTitle": "Ứng dụng này sẽ có thể:",
+    "canRead": "Đọc nguồn, ghi chú, thẻ và thống kê ôn tập của bạn",
+    "canAdd": "Thêm nguồn và ghi chú",
+    "canPropose": "Đề xuất thẻ, các thẻ này chờ bạn duyệt",
+    "cannotDelete": "Ứng dụng không xoá được gì.",
+    "returnsTo": "Bạn sẽ quay về {address}",
+    "allow": "Cho phép",
+    "deny": "Từ chối",
+    "failed": "Chưa thực hiện được. Thử lại.",
+    "unnamedApp": "Ứng dụng này",
+    "invalidTitle": "Link này không dùng được",
+    "invalidBody": "Link có thể đã hết hạn. Hãy kết nối lại từ ứng dụng của bạn."
   }
 }

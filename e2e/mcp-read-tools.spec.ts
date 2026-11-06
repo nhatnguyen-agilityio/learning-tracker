@@ -9,9 +9,9 @@ async function createToken(page: Page) {
   await page.getByLabel("New token name").fill("Reader");
   await expect(async () => {
     await page.getByRole("button", { name: "Create token" }).click();
-    await expect(page.locator("code")).toBeVisible({ timeout: 2000 });
+    await expect(page.getByText(/^lt_/)).toBeVisible({ timeout: 2000 });
   }).toPass();
-  return (await page.locator("code").textContent()) ?? "";
+  return (await page.getByText(/^lt_/).textContent()) ?? "";
 }
 
 async function connect(baseURL: string, token: string) {
