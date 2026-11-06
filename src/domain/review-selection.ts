@@ -77,8 +77,8 @@ export async function selectReviewCards(db: Db, userId: string, now: Date) {
   ]);
 
   const isBacklog = dueCount > REVIEW_BATCH_SIZE;
-  const newRows = isBacklog
-    ? []
+  const fresh = isBacklog
+    ? { rows: [], waiting: 0 }
     : await selectNewCards(db, {
         reviewable,
         userId,
@@ -88,7 +88,7 @@ export async function selectReviewCards(db: Db, userId: string, now: Date) {
       });
 
   return {
-    cards: [...dueRows, ...newRows].map(
+    cards: [...dueRows, ...fresh.rows].map(
       ({ id, front, back, resourceTitle, ...schedule }) => ({
         id,
         front,
@@ -99,6 +99,8 @@ export async function selectReviewCards(db: Db, userId: string, now: Date) {
     ),
     dueCount,
     isBacklog,
+    /** Cards the next batch could take, so the summary can offer one. */
+    remaining: dueCount - dueRows.length + fresh.waiting,
   };
 }
 
@@ -117,15 +119,27 @@ async function selectNewCards(
     options.userId,
     options.dayStart,
   );
-  const limit = Math.min(options.newCardsPerDay - started, options.room);
-  if (limit <= 0) return [];
+  const allowed = Math.max(options.newCardsPerDay - started, 0);
+  const limit = Math.min(allowed, options.room);
+  const isNew = and(options.reviewable, eq(cardSchedules.state, NEW_STATE));
 
-  return db
-    .select(reviewCardFields)
-    .from(cards)
-    .innerJoin(cardSchedules, eq(cardSchedules.cardId, cards.id))
-    .leftJoin(resources, eq(resources.id, cards.resourceId))
-    .where(and(options.reviewable, eq(cardSchedules.state, NEW_STATE)))
-    .orderBy(asc(cards.createdAt), asc(cards.id))
-    .limit(limit);
+  const [rows, [{ total }]] = await Promise.all([
+    limit > 0
+      ? db
+          .select(reviewCardFields)
+          .from(cards)
+          .innerJoin(cardSchedules, eq(cardSchedules.cardId, cards.id))
+          .leftJoin(resources, eq(resources.id, cards.resourceId))
+          .where(isNew)
+          .orderBy(asc(cards.createdAt), asc(cards.id))
+          .limit(limit)
+      : [],
+    db
+      .select({ total: count() })
+      .from(cards)
+      .innerJoin(cardSchedules, eq(cardSchedules.cardId, cards.id))
+      .where(isNew),
+  ]);
+
+  return { rows, waiting: Math.min(allowed, total) - rows.length };
 }

@@ -205,6 +205,16 @@
     "signedOut": "Phiên đăng nhập đã hết. Đăng nhập lại để gửi các lượt chấm.",
     "undo": "Hoàn tác",
     "again": "Ôn lại",
-    "undoFailed": "Không hoàn tác được lượt chấm đó."
+    "undoFailed": "Không hoàn tác được lượt chấm đó.",
+    "batchTitle": "Xong lô này",
+    "batchBody": "Còn {count} thẻ đến hạn.",
+    "doneTitle": "Xong phiên ôn",
+    "doneBody": "Bạn đã ôn hết thẻ đến hạn hôm nay.",
+    "statCards": "thẻ đã ôn",
+    "statRate": "tỷ lệ nhớ",
+    "statStreak": "ngày liên tiếp",
+    "rateNote": "Tỷ lệ nhớ tính trên lượt chấm đầu tiên của mỗi thẻ.",
+    "keepReviewing": "Ôn tiếp",
+    "batchFailed": "Không tải thêm được thẻ. Thử lại."
   }
 }
