@@ -52,6 +52,15 @@ export default async function Settings() {
         </div>
       </section>
       <TopicsSection topics={topics} />
+      <section className="flex flex-col items-start gap-2">
+        <h2 className="font-semibold">{t("yourData")}</h2>
+        <p className="text-sm text-muted-foreground">{t("exportHint")}</p>
+        <Button asChild variant="secondary">
+          <a href="/api/export" download>
+            {t("export")}
+          </a>
+        </Button>
+      </section>
       <nav aria-label={tLegal("tabs")} className="flex gap-4 text-sm">
         <Link href="/terms" className="underline underline-offset-4">
           {tLegal("terms")}

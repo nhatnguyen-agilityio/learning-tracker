@@ -56,7 +56,10 @@
     "edit": "Edit",
     "delete": "Delete",
     "cancel": "Cancel",
-    "save": "Save"
+    "save": "Save",
+    "yourData": "Your data",
+    "exportHint": "Download a JSON file with all your sources, notes, cards and review history.",
+    "export": "Export data as JSON"
   },
   "resourceForm": {
     "add": "Add a source",
