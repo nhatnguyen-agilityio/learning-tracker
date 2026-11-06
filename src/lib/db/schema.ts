@@ -245,6 +245,7 @@ export const apiTokens = pgTable(
     userId: userId(),
     name: text("name").notNull(),
     tokenHash: text("token_hash").notNull().unique(),
+    createdAt: createdAt(),
     lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
     revokedAt: timestamp("revoked_at", { withTimezone: true }),
   },
