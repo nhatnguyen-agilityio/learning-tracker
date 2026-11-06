@@ -1,5 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
-import { signIn } from "./sign-in";
+import { signInNewUser } from "./sign-in";
 
 const viSignInText = /Gom nguồn học/;
 const englishHeading = (page: Page) =>
@@ -7,8 +7,9 @@ const englishHeading = (page: Page) =>
 const vietnameseHeading = (page: Page) =>
   page.getByRole("heading", { name: "Cài đặt" });
 
+/** A new user, because the language is now saved to the account. */
 async function openSettings(page: Page) {
-  await signIn(page);
+  await signInNewUser(page);
   await page.goto("/settings");
 }
 

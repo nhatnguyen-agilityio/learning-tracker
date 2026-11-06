@@ -30,7 +30,19 @@
     "language": "Ngôn ngữ",
     "appearance": "Giao diện",
     "light": "Sáng",
-    "dark": "Tối"
+    "dark": "Tối",
+    "learning": "Học và hiển thị",
+    "perDay": "Thẻ mới mỗi ngày",
+    "perDayHint": "Mặc định 20. Khi còn thẻ quá hạn, app tạm dừng thẻ mới.",
+    "perDayError": "Nhập số nguyên từ 0 đến 100.",
+    "timezone": "Múi giờ",
+    "timezoneHint": "Ngày mới bắt đầu lúc 04:00 theo múi giờ này.",
+    "saved": "Đã lưu",
+    "saveFailed": "Không lưu được thay đổi. Thử lại.",
+    "signOut": "Đăng xuất",
+    "errorTitle": "Không tải được cài đặt",
+    "errorBody": "Kiểm tra kết nối rồi thử lại.",
+    "retry": "Thử lại"
   },
   "resourceForm": {
     "add": "Thêm nguồn",
