@@ -4,11 +4,13 @@ import { cards, notes, resources } from "@/lib/db/schema";
 import { SEEDED_USERS, withTestDb } from "@/lib/db/test-db";
 import type { Db } from "@/lib/db/types";
 import {
+  countResources,
   createResource,
   deleteResource,
   findResourceByUrl,
   getResource,
   listResources,
+  listResourcesInProgress,
   MAX_RESOURCES_PER_USER,
   MAX_TITLE_LENGTH,
   MAX_URL_LENGTH,
@@ -489,5 +491,69 @@ describe("deleting resources", () => {
   it("should return false when the id is not valid", () =>
     withTestDb(async (db) => {
       expect(await deleteResource(db, userA, "nope")).toBe(false);
+    }));
+});
+
+describe("listing resources in progress", () => {
+  const clean = (db: Db) =>
+    db.delete(resources).where(eq(resources.userId, userA));
+
+  it("should list only resources being learned", () =>
+    withTestDb(async (db) => {
+      await clean(db);
+      const learning = await addResource(db, userA, "learning");
+      await addResource(db, userA, "wanted");
+      await setResourceStatus(db, userA, learning, "learning");
+
+      const result = await listResourcesInProgress(db, userA);
+
+      expect(result.resources.map((row) => row.id)).toEqual([learning]);
+      expect(result.total).toBe(1);
+    }));
+
+  it("should show at most 3 with the most recently changed first", () =>
+    withTestDb(async (db) => {
+      await clean(db);
+      const ids: string[] = [];
+      for (let index = 0; index < 4; index += 1) {
+        const id = await addResource(db, userA, `learning-${index}`);
+        await setResourceStatus(db, userA, id, "learning");
+        await db
+          .update(resources)
+          .set({ updatedAt: new Date(2026, 0, index + 1) })
+          .where(eq(resources.id, id));
+        ids.push(id);
+      }
+
+      const result = await listResourcesInProgress(db, userA);
+
+      expect(result.resources.map((row) => row.id)).toEqual([
+        ids[3],
+        ids[2],
+        ids[1],
+      ]);
+      expect(result.total).toBe(4);
+    }));
+
+  it("should not list another user's resources", () =>
+    withTestDb(async (db) => {
+      await clean(db);
+      const other = await addResource(db, userB, "from-b");
+      await setResourceStatus(db, userB, other, "learning");
+
+      const result = await listResourcesInProgress(db, userA);
+
+      expect(result).toEqual({ resources: [], total: 0 });
+    }));
+});
+
+describe("counting resources", () => {
+  it("should count only the user's own resources", () =>
+    withTestDb(async (db) => {
+      await db.delete(resources).where(eq(resources.userId, userA));
+      await addResource(db, userA, "own");
+      await addResource(db, userB, "from-b");
+
+      expect(await countResources(db, userA)).toBe(1);
     }));
 });

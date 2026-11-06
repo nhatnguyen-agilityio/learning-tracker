@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { computeRecallRate, computeStreak } from "./review-stats";
+import {
+  computeRecallRate,
+  computeRecentDays,
+  computeStreak,
+} from "./review-stats";
 
 const TODAY = "2026-11-06";
 
@@ -91,5 +95,21 @@ describe("computeRecallRate", () => {
     const ratings = [rating("a", 1, "2026-11-05"), rating("a", 3)];
 
     expect(computeRecallRate(ratings)).toBe(50);
+  });
+});
+
+describe("computeRecentDays", () => {
+  it("should mark the last 7 days with today last", () => {
+    const days = ["2026-10-30", "2026-11-04", TODAY];
+
+    expect(computeRecentDays(days, TODAY)).toEqual([
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+    ]);
   });
 });

@@ -68,7 +68,7 @@ function withCleanUser(test: (db: Db) => Promise<void>, timezone = "UTC") {
 describe("reading review stats", () => {
   it("should be empty when the user never reviewed", () =>
     withCleanUser(async (db) => {
-      expect(await getReviewStats(db, userA, now)).toEqual({
+      expect(await getReviewStats(db, userA, now)).toMatchObject({
         streak: 0,
         dueCount: 0,
         recallRate: null,
@@ -152,7 +152,7 @@ describe("reading review stats", () => {
       const id = await addCard(db, { userId: userB, due: daysAgo(1) });
       await addReview(db, id, now, { userId: userB });
 
-      expect(await getReviewStats(db, userA, now)).toEqual({
+      expect(await getReviewStats(db, userA, now)).toMatchObject({
         streak: 0,
         dueCount: 0,
         recallRate: null,

@@ -216,5 +216,24 @@
     "rateNote": "Tỷ lệ nhớ tính trên lượt chấm đầu tiên của mỗi thẻ.",
     "keepReviewing": "Ôn tiếp",
     "batchFailed": "Không tải thêm được thẻ. Thử lại."
+  },
+  "today": {
+    "dueLabel": "thẻ đến hạn",
+    "backlog": "Bạn có nhiều thẻ tồn đọng sau thời gian nghỉ. App chia thành từng lô 50 thẻ, ưu tiên thẻ quá hạn lâu nhất và tạm dừng thẻ mới cho tới khi hết tồn đọng.",
+    "noDueTitle": "Hôm nay không có thẻ đến hạn",
+    "doneTitle": "Đã ôn hết thẻ hôm nay",
+    "noDueBody": "Thẻ tiếp theo đến hạn vào ngày mai. Streak của bạn vẫn được giữ.",
+    "firstTitle": "Bắt đầu từ một nguồn học",
+    "firstBody": "Thêm bài viết, video hoặc khoá học bạn đang theo. Thẻ ôn sẽ xuất hiện ở đây.",
+    "firstAction": "Thêm nguồn học đầu tiên",
+    "streak": "{count} ngày liên tiếp",
+    "noStreak": "Ôn một thẻ hôm nay để bắt đầu streak mới",
+    "inProgress": "Đang học dở",
+    "seeAll": "Xem cả {count}",
+    "noLearning": "Chưa có nguồn nào đang học.",
+    "openLibrary": "Mở Library",
+    "errorTitle": "Không tải được dữ liệu hôm nay",
+    "errorBody": "Kiểm tra kết nối rồi thử lại.",
+    "retry": "Thử lại"
   }
 }
