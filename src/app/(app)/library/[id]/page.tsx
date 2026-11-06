@@ -2,10 +2,12 @@ import { ArrowLeftIcon, ExternalLinkIcon } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
+import { NotesSection } from "@/components/notes/notes-section";
 import { ResourceModal } from "@/components/resource-modal/resource-modal";
 import { ResourceThumbnail } from "@/components/resource-modal/resource-thumbnail";
 import { TopicDot } from "@/components/topic-dot";
 import { Button } from "@/components/ui/button";
+import { listNotes } from "@/domain/notes";
 import { getResource } from "@/domain/resources";
 import { listResourceTopics, listTopics } from "@/domain/topics";
 import { requireUserId } from "@/lib/auth/session";
@@ -24,12 +26,13 @@ export default async function ResourceDetail({
   const resource = await getResource(db, userId, id);
   if (!resource) notFound();
 
-  const [t, tForm, tNav, topics, allTopics] = await Promise.all([
+  const [t, tForm, tNav, topics, allTopics, notes] = await Promise.all([
     getTranslations("resourceDetail"),
     getTranslations("resourceForm"),
     getTranslations("nav"),
     listResourceTopics(db, userId, id),
     listTopics(db, userId),
+    listNotes(db, userId, id),
   ]);
 
   return (
@@ -74,14 +77,13 @@ export default async function ResourceDetail({
           triggerVariant="secondary"
         />
       </div>
-      {(["progress", "notes", "cards"] as const).map((section) => (
-        <section
-          key={section}
-          className="rounded-lg border border-border bg-card p-4"
-        >
-          <h2 className="font-semibold">{t(section)}</h2>
-        </section>
-      ))}
+      <section className="rounded-lg border border-border bg-card p-4">
+        <h2 className="font-semibold">{t("progress")}</h2>
+      </section>
+      <NotesSection resourceId={id} initialNotes={notes} />
+      <section className="rounded-lg border border-border bg-card p-4">
+        <h2 className="font-semibold">{t("cards")}</h2>
+      </section>
     </>
   );
 }

@@ -87,10 +87,32 @@
     "openLink": "Mở link gốc",
     "edit": "Sửa",
     "progress": "Tiến độ",
-    "notes": "Ghi chú",
     "cards": "Thẻ",
     "notFound": "Không tìm thấy nguồn này",
     "backToLibrary": "Về Library",
     "errorTitle": "Không tải được nguồn này"
+  },
+  "notes": {
+    "title": "Ghi chú",
+    "add": "Thêm ghi chú",
+    "empty": "Chưa có ghi chú nào.",
+    "label": "Ghi chú",
+    "placeholder": "Viết ghi chú bằng markdown",
+    "mode": "Chế độ soạn",
+    "write": "Viết",
+    "preview": "Xem trước",
+    "heading": "Thêm tiêu đề",
+    "list": "Thêm danh sách",
+    "codeBlock": "Thêm khối code",
+    "delete": "Xoá ghi chú",
+    "deleteTitle": "Xoá ghi chú này?",
+    "deleteBody": "Không hoàn tác được.",
+    "cancel": "Huỷ",
+    "confirmDelete": "Xoá",
+    "saving": "Đang lưu",
+    "saved": "Đã lưu",
+    "failed": "Không lưu được. Nội dung của bạn vẫn còn đây.",
+    "tooLarge": "Ghi chú vượt giới hạn 100 KB. Hãy rút gọn để lưu.",
+    "size": "{used} trên {max} KB"
   }
 }

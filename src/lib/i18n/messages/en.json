@@ -87,10 +87,32 @@
     "openLink": "Open original link",
     "edit": "Edit",
     "progress": "Progress",
-    "notes": "Notes",
     "cards": "Cards",
     "notFound": "This source doesn't exist",
     "backToLibrary": "Back to Library",
     "errorTitle": "Could not load this source"
+  },
+  "notes": {
+    "title": "Notes",
+    "add": "Add a note",
+    "empty": "No notes yet.",
+    "label": "Note",
+    "placeholder": "Write your note in markdown",
+    "mode": "Editor mode",
+    "write": "Write",
+    "preview": "Preview",
+    "heading": "Add a heading",
+    "list": "Add a list",
+    "codeBlock": "Add a code block",
+    "delete": "Delete note",
+    "deleteTitle": "Delete this note?",
+    "deleteBody": "This can't be undone.",
+    "cancel": "Cancel",
+    "confirmDelete": "Delete",
+    "saving": "Saving",
+    "saved": "Saved",
+    "failed": "Could not save. Your text is still here.",
+    "tooLarge": "This note is over the 100 KB limit. Shorten it to save.",
+    "size": "{used} of {max} KB"
   }
 }
