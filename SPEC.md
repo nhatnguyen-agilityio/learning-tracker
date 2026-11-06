@@ -39,7 +39,7 @@ Metrics are calculated with SQL from the `reviews` table.
 ### F3 — Study and take notes
 
 1. Open a resource → press to open the original link (new tab)
-2. Add or edit markdown notes in the resource's note list; each note auto-saves on its own
+2. Add or edit markdown notes in the resource's note list; each note auto-saves on its own. Above 100 KB, saving stops and an error shows; the text stays in the editor and the last saved version is kept
 3. Drag the progress bar; above 0, "Want to learn" changes to "Learning" automatically; at 100%, suggest changing to "Done". For an existing resource, changing to "Done" does not change the %
 
 ### F4 — Create cards by hand
