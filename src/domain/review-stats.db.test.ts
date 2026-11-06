@@ -147,6 +147,19 @@ describe("reading review stats", () => {
       expect((await getReviewStats(db, userA, now)).recallRate).toBe(100);
     }));
 
+  it("should use the given period for the recall rate", () =>
+    withCleanUser(async (db) => {
+      const id = await addCard(db);
+      await addReview(db, id, daysAgo(20), { rating: 1 });
+      await addReview(db, id, daysAgo(1), { rating: 3 });
+
+      const week = await getReviewStats(db, userA, now, 7);
+      const month = await getReviewStats(db, userA, now, 30);
+
+      expect(week.recallRate).toBe(100);
+      expect(month.recallRate).toBe(50);
+    }));
+
   it("should not read another user's data", () =>
     withCleanUser(async (db) => {
       const id = await addCard(db, { userId: userB, due: daysAgo(1) });

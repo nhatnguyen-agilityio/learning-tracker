@@ -5,7 +5,7 @@ import { reviewDayKey } from "./review-day";
 import { DEFAULT_TIMEZONE } from "./timezone";
 import { getUserSettings } from "./user-settings";
 
-const RECALL_WINDOW_DAYS = 30;
+const DEFAULT_RECALL_DAYS = 30;
 const FORGOT_VALUE = 1;
 const RECENT_DAYS = 7;
 const NEW_STATE = 0;
@@ -72,7 +72,12 @@ export function computeRecentDays(reviewDays: Iterable<string>, today: string) {
 }
 
 /** Ratings must be oldest first, which is how they are read below. */
-export async function getReviewStats(db: Db, userId: string, now: Date) {
+export async function getReviewStats(
+  db: Db,
+  userId: string,
+  now: Date,
+  recallDays = DEFAULT_RECALL_DAYS,
+) {
   const settings = await getUserSettings(db, userId);
   const timezone = settings?.timezone ?? DEFAULT_TIMEZONE;
 
@@ -124,7 +129,7 @@ export async function getReviewStats(db: Db, userId: string, now: Date) {
     ...waiting.map(({ due }) => ({ from: dayOf(due), until: null })),
   ];
 
-  const windowStart = now.getTime() - RECALL_WINDOW_DAYS * 24 * 60 * 60 * 1000;
+  const windowStart = now.getTime() - recallDays * 24 * 60 * 60 * 1000;
 
   const reviewDays = rated.map(({ day }) => day);
 

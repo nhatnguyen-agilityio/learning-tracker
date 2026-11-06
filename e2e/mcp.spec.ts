@@ -77,7 +77,12 @@ test("should answer with the token owner's data", async ({ page, baseURL }) => {
   expect(result.content).toEqual([
     {
       type: "text",
-      text: JSON.stringify({ streak: 0, dueCount: 0, recallRate: null }),
+      text: JSON.stringify({
+        streak: 0,
+        dueCount: 0,
+        recallRate: null,
+        range: "30d",
+      }),
     },
   ]);
 });
@@ -122,6 +127,20 @@ test("should refuse a revoked token", async ({ page }) => {
   const response = await post(page, `Bearer ${token}`);
 
   expect(response.status()).toBe(401);
+});
+
+test("should refuse a batch of requests", async ({ page }) => {
+  const token = await createToken(page, "MCP batch");
+
+  const response = await page.request.post("/api/mcp", {
+    data: [initialize, initialize],
+    headers: {
+      accept: "application/json, text/event-stream",
+      authorization: `Bearer ${token}`,
+    },
+  });
+
+  expect(response.status()).toBe(400);
 });
 
 test("should answer 429 over the rate limit", async ({ page }) => {
