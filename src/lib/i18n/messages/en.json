@@ -172,6 +172,14 @@
     "showMore": "Show more",
     "errorTitle": "Could not load your cards",
     "errorBody": "Check your connection and try again.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "suspend": "Suspend",
+    "resume": "Resume",
+    "delete": "Delete",
+    "deleteTitle": "Delete this card?",
+    "deleteBody": "This can't be undone.",
+    "cancel": "Cancel",
+    "confirmDelete": "Delete card",
+    "actionFailed": "That didn't work. Try again."
   }
 }

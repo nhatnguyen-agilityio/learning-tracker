@@ -111,3 +111,47 @@ test("should show more cards when asked", async ({ page }) => {
   await expect(page.getByRole("listitem")).toHaveCount(101);
   await expect(page.getByRole("link", { name: "Show more" })).toBeHidden();
 });
+
+test("should suspend and resume a card", async ({ page }) => {
+  await openNewResource(page, "Paused guide");
+  await addCard(page, "Pause me", "Answer");
+  await page.goto("/cards");
+
+  await row(page, "Pause me").getByRole("button", { name: "Suspend" }).click();
+  await expect(row(page, "Pause me")).toContainText("Suspended");
+  await page.reload();
+  await expect(row(page, "Pause me")).toContainText("Suspended");
+
+  await row(page, "Pause me").getByRole("button", { name: "Resume" }).click();
+
+  await expect(row(page, "Pause me")).toContainText("New");
+  await expect(
+    row(page, "Pause me").getByRole("button", { name: "Suspend" }),
+  ).toBeVisible();
+});
+
+test("should delete a card after confirming", async ({ page }) => {
+  await openNewResource(page, "Trimmed guide");
+  await addCard(page, "Delete me", "Answer");
+  await page.goto("/cards");
+
+  await row(page, "Delete me").getByRole("button", { name: "Delete" }).click();
+  await dialog(page).getByRole("button", { name: "Delete card" }).click();
+
+  await expect(page.getByText("Delete me")).toBeHidden();
+  await page.reload();
+  await expect(page.getByText("No cards yet")).toBeVisible();
+});
+
+test("should keep the card when cancelling the delete", async ({ page }) => {
+  await openNewResource(page, "Kept guide");
+  await addCard(page, "Keep me", "Answer");
+  await page.goto("/cards");
+
+  await row(page, "Keep me").getByRole("button", { name: "Delete" }).click();
+  await dialog(page).getByRole("button", { name: "Cancel" }).click();
+
+  await expect(dialog(page)).toBeHidden();
+  await page.reload();
+  await expect(row(page, "Keep me")).toBeVisible();
+});

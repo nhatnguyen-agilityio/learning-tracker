@@ -73,7 +73,7 @@ Metrics are calculated with SQL from the `reviews` table.
 
 1. On the resource page, press "Delete resource" → confirm
 2. The resource's notes are deleted; cards are kept and detached from the resource (`resource_id = null`)
-3. Deleting a card that has been reviewed is a soft delete (`deleted_at`) to keep `reviews`; deleting a pending card is a hard delete
+3. Deleting a card that has been reviewed is a soft delete (`deleted_at`) to keep `reviews`; deleting a card with no reviews, pending or active, is a hard delete
 
 ### F9 — Settings and account
 

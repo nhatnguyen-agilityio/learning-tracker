@@ -1,5 +1,5 @@
 import { and, asc, count, desc, eq, isNull, ne } from "drizzle-orm";
-import { cardSchedules, cards, resources } from "@/lib/db/schema";
+import { cardSchedules, cards, resources, reviews } from "@/lib/db/schema";
 import type { Db } from "@/lib/db/types";
 import { MAX_CARDS_PER_USER, validateCard } from "./card-limits";
 import { getResource } from "./resources";
@@ -154,4 +154,66 @@ export async function updateCard(
     )
     .returning({ id: cards.id, resourceId: cards.resourceId });
   return card ? ({ kind: "updated", card } as const) : null;
+}
+
+/**
+ * Moves a card between active and suspended; the schedule stays as it is.
+ * Pending cards can't be suspended. Returns null for another user's card.
+ */
+export async function setCardSuspended(
+  db: Db,
+  userId: string,
+  cardId: string,
+  suspended: boolean,
+) {
+  if (!isUuid(cardId)) return null;
+
+  const [card] = await db
+    .update(cards)
+    .set({ status: suspended ? "suspended" : "active" })
+    .where(
+      and(
+        eq(cards.userId, userId),
+        eq(cards.id, cardId),
+        isNull(cards.deletedAt),
+        ne(cards.status, "pending"),
+      ),
+    )
+    .returning({ resourceId: cards.resourceId });
+  return card ?? null;
+}
+
+/**
+ * A reviewed card is soft deleted so its reviews stay; a card with no reviews
+ * has nothing to keep and is removed (SPEC.md, F8). Returns null for another
+ * user's card.
+ */
+export async function deleteCard(db: Db, userId: string, cardId: string) {
+  if (!isUuid(cardId)) return null;
+
+  const owned = and(
+    eq(cards.userId, userId),
+    eq(cards.id, cardId),
+    isNull(cards.deletedAt),
+  );
+  return db.transaction(async (tx) => {
+    const [card] = await tx
+      .select({ resourceId: cards.resourceId })
+      .from(cards)
+      .where(owned)
+      .for("update");
+    if (!card) return null;
+
+    const [{ total }] = await tx
+      .select({ total: count() })
+      .from(reviews)
+      .where(and(eq(reviews.userId, userId), eq(reviews.cardId, cardId)));
+
+    if (total > 0) {
+      await tx.update(cards).set({ deletedAt: new Date() }).where(owned);
+    } else {
+      await tx.delete(cards).where(owned);
+    }
+    return card;
+  });
 }

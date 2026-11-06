@@ -1,5 +1,5 @@
 import { useTranslations } from "next-intl";
-import { CardModal } from "./card-modal";
+import { CardRowActions } from "./card-row-actions";
 
 type CardRowProps = {
   card: {
@@ -25,8 +25,8 @@ export function CardRow({ card }: CardRowProps) {
     card.status === "suspended" ? "suspended" : card.isNew ? "new" : "active";
 
   return (
-    <li className="flex items-center gap-2 p-3">
-      <div className="flex min-w-0 flex-1 flex-col gap-1">
+    <li className="flex flex-wrap items-center gap-2 p-3">
+      <div className="flex min-w-0 flex-[1_1_240px] flex-col gap-1">
         <span className="line-clamp-2 text-sm font-medium wrap-anywhere">
           {card.front}
         </span>
@@ -41,12 +41,10 @@ export function CardRow({ card }: CardRowProps) {
           </span>
         </span>
       </div>
-      <CardModal
-        target={{
-          kind: "edit",
-          cardId: card.id,
-          resourceTitle: card.resourceTitle,
-        }}
+      <CardRowActions
+        cardId={card.id}
+        resourceTitle={card.resourceTitle}
+        suspended={card.status === "suspended"}
       />
     </li>
   );
