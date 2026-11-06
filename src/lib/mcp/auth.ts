@@ -17,7 +17,10 @@ export function userIdFromClaims(
   return typeof claims.sub === "string" && claims.sub ? claims.sub : null;
 }
 
-/** Checks the signature with Supabase and returns the token's user. */
+/**
+ * Checks the signature, then asks Supabase whether the session still exists:
+ * the signature alone stays valid after the user disconnects the app.
+ */
 export async function verifyOAuthToken(token: string) {
   const { url, anonKey } = supabaseEnv();
   const client = createClient(url, anonKey, {
@@ -25,5 +28,9 @@ export async function verifyOAuthToken(token: string) {
   });
 
   const { data, error } = await client.auth.getClaims(token);
-  return error ? null : userIdFromClaims(data?.claims);
+  const userId = error ? null : userIdFromClaims(data?.claims);
+  if (!userId) return null;
+
+  const { error: sessionError } = await client.auth.getUser(token);
+  return sessionError ? null : userId;
 }

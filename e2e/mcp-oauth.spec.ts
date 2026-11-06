@@ -144,6 +144,71 @@ test("should list and disconnect a connected app", async ({ page }) => {
   }).toPass();
 });
 
+test("should stop a token when the app is disconnected", async ({ page }) => {
+  const flow = await startFlow(page);
+  const redirected = await decide(page, "Allow");
+  const tokens = await exchange(
+    page,
+    flow,
+    redirected.searchParams.get("code") ?? "",
+  );
+
+  await page.goto("/settings");
+  const row = page.getByRole("listitem").filter({ hasText: "Test connector" });
+  await expect(async () => {
+    await row.getByRole("button", { name: "Disconnect" }).click();
+    await expect(row).toBeHidden({ timeout: 3000 });
+  }).toPass();
+
+  const response = await page.request.post("/api/mcp", {
+    headers: { authorization: `Bearer ${tokens.access_token}` },
+    data: { jsonrpc: "2.0", id: 1, method: "tools/list" },
+  });
+  expect(response.status()).toBe(401);
+});
+
+test("should not accept an OAuth token as a web session", async ({
+  page,
+  context,
+}) => {
+  const flow = await startFlow(page);
+  const redirected = await decide(page, "Allow");
+  const tokens = await exchange(
+    page,
+    flow,
+    redirected.searchParams.get("code") ?? "",
+  );
+
+  const cookies = await context.cookies();
+  const session = cookies.filter((cookie) =>
+    /^sb-.*-auth-token(\.\d+)?$/.test(cookie.name),
+  );
+  const name = session[0].name.replace(/\.\d+$/, "");
+  await context.clearCookies();
+  await context.addCookies([
+    {
+      ...session[0],
+      name,
+      value: `base64-${Buffer.from(
+        JSON.stringify({
+          access_token: tokens.access_token,
+          refresh_token: tokens.refresh_token,
+          token_type: "bearer",
+          expires_in: 3600,
+          expires_at: Math.floor(Date.now() / 1000) + 3600,
+          user: { id: "unused" },
+        }),
+      ).toString("base64url")}`,
+    },
+  ]);
+
+  await page.goto("/settings");
+
+  await expect(page).toHaveURL(/\/sign-in/);
+  const exported = await page.request.get("/api/export");
+  expect(exported.ok()).toBe(false);
+});
+
 test("should explain a bad consent link", async ({ page }) => {
   await page.goto("/oauth/consent?authorization_id=nope");
 

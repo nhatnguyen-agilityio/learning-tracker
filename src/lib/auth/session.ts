@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { cache } from "react";
+import { webUserIdFromClaims } from "./claims";
 import { SIGN_IN_PATH } from "./routes";
 import { createClient } from "./server";
 
@@ -10,7 +11,7 @@ export const getUserId = cache(async (): Promise<string | null> => {
   await connection();
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
-  return data?.claims.sub ?? null;
+  return webUserIdFromClaims(data?.claims);
 });
 
 /**

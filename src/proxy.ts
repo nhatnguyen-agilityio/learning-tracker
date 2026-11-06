@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
+import { webUserIdFromClaims } from "@/lib/auth/claims";
 import { supabaseEnv } from "@/lib/auth/env";
 import { isApiPath, isPublicPath, SIGN_IN_PATH } from "@/lib/auth/routes";
 
@@ -29,7 +30,9 @@ export async function proxy(request: NextRequest) {
   const { data } = await supabase.auth.getClaims();
   const { pathname, search } = request.nextUrl;
 
-  if (!data?.claims && !isPublicPath(pathname) && !isApiPath(pathname)) {
+  const signedIn = webUserIdFromClaims(data?.claims) !== null;
+
+  if (!signedIn && !isPublicPath(pathname) && !isApiPath(pathname)) {
     const signIn = request.nextUrl.clone();
     signIn.pathname = SIGN_IN_PATH;
     signIn.search = "";
