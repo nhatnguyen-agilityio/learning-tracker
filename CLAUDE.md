@@ -4,56 +4,57 @@
 
 ## What this is
 
-Web app cho người tự học: gom nguồn học, ghi chú và thẻ ôn vào một luồng, rồi ôn bằng spaced repetition. Người dùng chính là lập trình viên học song song với công việc; mỗi người chỉ thấy dữ liệu của mình.
+A web app for self-learners: bring resources, notes and review cards into one flow, then review with spaced repetition. The main user is a developer learning alongside their job; each person sees only their own data.
 
 ## Sources of truth
 
-- Spec: `SPEC.md`. Khi có quyết định mới về flow, dữ liệu hay phạm vi, cập nhật cả `SPEC.md` và PRD.
+- Spec: `SPEC.md`. When a new decision affects a flow, data or scope, update both `SPEC.md` (English) and the PRD (Vietnamese).
 - PRD: https://claude.ai/artifact/Su4HPs68ZmL3RkB8cMyctc
-- Design system và prototype: https://claude.ai/artifact/NYLS4XYntxLFmtp5snMb2o
-- Ticket: Trello https://trello.com/b/builyI19/learning-tracker (Backlog, In Progress, Review, Done)
+- Design system and prototype: https://claude.ai/artifact/NYLS4XYntxLFmtp5snMb2o
+- Tickets: Trello https://trello.com/b/builyI19/learning-tracker (Backlog, In Progress, Review, Done)
 
-Prototype là bản giả lập để tham khảo UI và flow, không chép code của nó.
+The prototype is a mock for reference on UI and flow; don't copy its code.
 
 ## Commands
 
-Chạy `nvm use` trước; repo ghim Node 24 và pnpm qua corepack.
+Run `nvm use` first; the repo pins Node 24 and pnpm through corepack.
 
 - Install: `pnpm install`
-- Run: `pnpm dev` (cổng 3000)
-- Test: `pnpm test` (cần `pnpm db:start`) · E2E: `pnpm test:e2e`
+- Run: `pnpm dev` (port 3000)
+- Test: `pnpm test` (needs `pnpm db:start`) · E2E: `pnpm test:e2e`
 - Lint: `pnpm lint` · Types: `pnpm typecheck` · Format: `pnpm format`
 - Build: `pnpm build`
-- Database local: `pnpm db:start` · `pnpm db:status` · `pnpm db:stop` (cần Docker, xem README)
-- Migration: `pnpm db:generate --name=<ten>` · `pnpm db:migrate`; schema nằm ở `src/lib/db/schema.ts`
+- Local database: `pnpm db:start` · `pnpm db:status` · `pnpm db:stop` (needs Docker, see the README)
+- Migrations: `pnpm db:generate --name=<name>` · `pnpm db:migrate`; the schema is in `src/lib/db/schema.ts`
 
 ## Conventions
 
-- Folder layout: `src/app` route, `src/components` UI, `src/components/ui` shadcn, `src/domain` logic nghiệp vụ thuần TypeScript, `src/lib` tiện ích
-- Logic nghiệp vụ nằm trong `src/domain`, dùng chung cho UI, Server Actions và MCP
-- Chỉ dùng token ngữ nghĩa trong `src/app/globals.css`, không viết mã màu trong component
-- Khoảng cách là bội số của 4; UI có đủ tiếng Việt và tiếng Anh
-- Test nằm cạnh code, tên theo mẫu "should … when …"; E2E nằm trong `e2e/`
-- Commits: một dòng, `feat(): …` / `bugfix(): …` / `refactor(): …` / `test(): …`
-- Branches: `feat/<short>` hoặc `fix/<short>` tạo từ `dev`, merge vào `dev` qua pull request (`--base dev`)
-- Deploy: chỉ PR `dev` → `main` khi đưa lên production; merge vào `main` là deploy
+- Language: everything in the repo, git and Trello is in English; the exceptions are the Vietnamese product text in `src/lib/i18n/messages/vi.json` and tests that check it
+- Folder layout: `src/app` routes, `src/components` UI, `src/components/ui` shadcn, `src/domain` pure TypeScript business logic, `src/lib` utilities
+- Business logic lives in `src/domain`, shared by the UI, Server Actions and MCP
+- Use only the semantic tokens in `src/app/globals.css`; no color codes in components
+- Spacing is a multiple of 4; the UI has both Vietnamese and English
+- Tests sit next to the code and are named "should … when …"; E2E is in `e2e/`
+- Commits: one line, `feat(): …` / `bugfix(): …` / `refactor(): …` / `test(): …`
+- Branches: `feat/<short>` or `fix/<short>` cut from `dev`, merged into `dev` through a pull request (`--base dev`)
+- Deploy: only a `dev` → `main` PR goes to production; merging into `main` deploys
 
-## Viết hàm domain mới
+## Writing a new domain function
 
-Tầng `domain` là lớp phân quyền duy nhất: app kết nối bằng role bỏ qua RLS, nên thiếu filter `userId` là lộ dữ liệu. Mẫu: `src/domain/resources.ts`.
+The `domain` layer is the only authorization layer: the app connects with a role that bypasses RLS, so a missing `userId` filter leaks data. Pattern: `src/domain/resources.ts`.
 
-- Hàm đụng bảng của user có chữ ký `(db: Db, userId: string, ...)`; `userId` lấy từ session ở tầng gọi, không lấy từ input của client
-- Mọi câu truy vấn có `eq(table.userId, userId)` viết thẳng; `and(undefined)` của Drizzle là không có filter
-- Dòng của user khác trả về như dòng không tồn tại (`null`), không báo lỗi riêng
-- Chọn cột cần trả, không `select *`
-- Không đọc `process.env`, cookie hay `next/*` trong `src/domain`; nếu tầng gọi dùng `"use cache"`, truyền `userId` qua tham số
-- Mỗi hàm có test đọc chéo trong `*.db.test.ts`, dùng `withTestDb` từ `src/lib/db/test-db.ts`. `withTestDb` luôn rollback, nên không đổi seed. CI chạy các test này trên Supabase local, nên thiếu filter `userId` là CI đỏ
+- A function that touches a user's table has the signature `(db: Db, userId: string, ...)`; `userId` comes from the session in the caller, never from client input
+- Every query has `eq(table.userId, userId)` written out; Drizzle's `and(undefined)` means no filter
+- Another user's row is returned as a missing row (`null`), with no separate error
+- Select the columns you return, never `select *`
+- Don't read `process.env`, cookies or `next/*` in `src/domain`; if the caller uses `"use cache"`, pass `userId` as a parameter
+- Each function has a cross-user read test in `*.db.test.ts`, using `withTestDb` from `src/lib/db/test-db.ts`. `withTestDb` always rolls back, so the seed stays unchanged. CI runs these tests on local Supabase, so a missing `userId` filter turns CI red
 
 ## Workflow
 
-- BA: no · QA: no. Ticket cùng `SPEC.md` là spec; test nằm trong plan được duyệt.
-- Mỗi ticket bắt đầu ở plan mode: goal, branch, files, steps, tests. Chỉ code sau khi plan được duyệt.
-- Trello không tự đóng card theo PR: dán link PR vào card và chuyển cột khi xong.
+- BA: no · QA: no. The ticket and `SPEC.md` are the spec; tests go in the approved plan.
+- Every ticket starts in plan mode: goal, branch, files, steps, tests. Code only after the plan is approved.
+- Trello doesn't close cards from PRs: add the PR link to the card and move it between columns.
 
 ## Never
 

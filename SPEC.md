@@ -1,231 +1,231 @@
 # Learning Tracker — SPEC
 
-Nguồn gốc: [Learning Tracker — PRD](https://claude.ai/artifact/Su4HPs68ZmL3RkB8cMyctc), cập nhật 2026-11-05. Khi có quyết định mới về flow, dữ liệu hay phạm vi, cập nhật cả hai nơi.
+Source: [Learning Tracker — PRD](https://claude.ai/artifact/Su4HPs68ZmL3RkB8cMyctc), updated 2026-11-05. When a new decision affects a flow, data or scope, update both places. This file is in English; the PRD is in Vietnamese.
 
-**Vấn đề:** người tự học lấy kiến thức từ nhiều nguồn. Link rải rác, tiến độ không rõ, học xong vài hôm là quên.
+**Problem:** self-learners pick up knowledge from many sources. Links are scattered, progress is unclear, and a few days after studying they forget.
 
-**Giải pháp:** một web app gom nguồn học, ghi chú và thẻ ôn tập vào một luồng. Lịch spaced repetition nhắc đúng lúc sắp quên. Claude tạo thẻ từ ghi chú qua MCP server của app.
+**Solution:** a web app that brings resources, notes and review cards into one flow. A spaced repetition schedule reminds people right before they forget. Claude creates cards from notes through the app's MCP server.
 
 ## Persona
 
-- **Người dùng chính:** lập trình viên tự học nhiều chủ đề song song với công việc. Học trên máy tính, ôn thẻ trên máy tính và điện thoại.
-- **Người dùng mở rộng:** bất kỳ ai đăng ký tài khoản bằng Google. Mỗi người chỉ thấy dữ liệu của mình.
+- **Primary user:** a developer learning several topics alongside their job. They study on a computer and review cards on a computer and a phone.
+- **Wider users:** anyone who signs up with Google. Each person sees only their own data.
 
-### Chỉ số thành công (sau 1 tháng dùng)
+### Success metrics (after 1 month of use)
 
-- Ôn thẻ ít nhất 5 ngày/tuần
-- Tỷ lệ nhớ (chấm "Nhớ rõ" hoặc "Mang máng") từ 80% trở lên, tính trên lượt chấm đầu tiên của mỗi thẻ trong phiên
-- Theo dõi tỷ lệ người dùng còn ôn sau 7 ngày
+- Reviews cards at least 5 days a week
+- Recall rate (rated "Remembered" or "Vaguely") of 80% or more, counted on the first rating of each card in a session
+- Track the share of users still reviewing after 7 days
 
-Các chỉ số tính bằng SQL từ bảng `reviews`.
+Metrics are calculated with SQL from the `reviews` table.
 
 ## User flow
 
-### F1 — Đăng ký / đăng nhập
+### F1 — Sign up / sign in
 
-1. Bấm "Đăng nhập bằng Google" → vào màn Today. Màn Đăng nhập có câu giới thiệu ngắn, nút chuyển ngôn ngữ và link Điều khoản, Quyền riêng tư
-2. Lần đầu: app lấy múi giờ và ngôn ngữ từ trình duyệt (không phải tiếng Việt thì dùng tiếng Anh); sửa được trong Settings
-3. Lần đầu: màn Today trống, gợi ý "Thêm nguồn học đầu tiên"
+1. Press "Sign in with Google" → open the Today screen. The sign-in screen has a short intro, a language switch, and links to Terms and Privacy
+2. First time: the app takes the time zone and language from the browser (anything other than Vietnamese uses English); both can be changed in Settings
+3. First time: Today is empty and suggests "Add your first resource"
 
-### F2 — Thêm nguồn học
+### F2 — Add a resource
 
-1. Bấm "Thêm nguồn" → dán link
-2. Link đã có trong thư viện → cảnh báo và mở nguồn đã có, không tạo bản mới
-3. App lấy tiêu đề, ảnh, loại (bài viết / video / khoá học / docs) qua oEmbed cho YouTube và Open Graph cho site khác; người dùng sửa được
-4. Chọn chủ đề (chọn có sẵn hoặc tạo mới tại chỗ), trạng thái mặc định "Muốn học" → Lưu. Thêm nguồn mới ở trạng thái "Xong" thì tiến độ là 100%
-5. Chuỗi không đúng định dạng link (phải bắt đầu bằng http hoặc https) → báo lỗi, không lưu được
-6. Link đúng định dạng nhưng lỗi, site chặn bot hoặc không lấy được metadata → vẫn lưu được, tự nhập tiêu đề. Ảnh lỗi thì hiện ảnh thay thế
+1. Press "Add resource" → paste a link
+2. The link is already in the library → warn and open the existing resource, without creating a new one
+3. The app fetches the title, image and type (article / video / course / docs) through oEmbed for YouTube and Open Graph for other sites; the user can edit them
+4. Pick topics (choose existing ones or create one in place), default status "Want to learn" → Save. A new resource saved as "Done" has 100% progress
+5. A string that isn't a valid link (it must start with http or https) → show an error, saving is blocked
+6. A valid link that is broken, blocks bots or gives no metadata → it can still be saved, with the title typed by hand. A broken image shows a fallback image
 
-### F3 — Học và ghi chú
+### F3 — Study and take notes
 
-1. Mở nguồn → bấm mở link gốc (tab mới)
-2. Thêm hoặc sửa ghi chú markdown trong danh sách ghi chú của nguồn; mỗi ghi chú tự lưu riêng
-3. Kéo thanh tiến độ %; lớn hơn 0 thì "Muốn học" tự chuyển sang "Đang học"; đạt 100% thì gợi ý chuyển sang "Xong". Với nguồn đã có, chuyển sang "Xong" không tự đổi %
+1. Open a resource → press to open the original link (new tab)
+2. Add or edit markdown notes in the resource's note list; each note auto-saves on its own
+3. Drag the progress bar; above 0, "Want to learn" changes to "Learning" automatically; at 100%, suggest changing to "Done". For an existing resource, changing to "Done" does not change the %
 
-### F4 — Tạo thẻ thủ công
+### F4 — Create cards by hand
 
-1. Trong trang nguồn, bấm "Thêm thẻ" → nhập mặt trước, mặt sau (markdown)
-2. Thẻ mới vào hàng chờ "thẻ mới" của lịch ôn
+1. On the resource page, press "Add card" → enter the front and back (markdown)
+2. The new card joins the schedule's "new cards" queue
 
-### F5 — Tạo thẻ qua Claude (MCP, slice S6)
+### F5 — Create cards through Claude (MCP, slice S6)
 
-1. Trong Settings, tạo API token và làm theo hướng dẫn kết nối MCP
-2. Trong Claude: "Tạo thẻ ôn tập từ ghi chú bài X"
-3. Claude tìm nguồn, đọc ghi chú qua MCP, đề xuất thẻ, rồi tạo thẻ ở trạng thái **chờ duyệt**
-4. Trong app, mục "Chờ duyệt" cho phép sửa, duyệt hoặc xoá từng thẻ, hoặc "Duyệt tất cả" theo từng nguồn. Chỉ thẻ đã duyệt mới vào lịch ôn, ở hàng thẻ mới và tính vào hạn mức thẻ mới/ngày
+1. In Settings, create an API token and follow the MCP connection guide
+2. In Claude: "Create review cards from my notes on article X"
+3. Claude finds the resource, reads the notes through MCP, proposes cards, then creates them as **pending**
+4. In the app, the "Pending" section lets the user edit, approve or delete each card, or "Approve all" per resource. Only approved cards enter the schedule, in the new-card queue, and they count toward the daily new-card limit
 
-### F6 — Ôn tập hằng ngày
+### F6 — Daily review
 
-1. Màn Today hiển thị số thẻ đến hạn → bấm "Bắt đầu ôn"
-2. Xem mặt trước → lật (Space hoặc chạm) → tự chấm: Quên / Mang máng / Nhớ rõ (phím 1/2/3). Dòng giải thích dưới nút: không nhớ ra đáp án thì chấm Quên; đúng nhưng phải nghĩ lâu thì chấm Mang máng
-3. App chuyển ngay sang thẻ kế và lưu lượt chấm ở nền; lỗi mạng thì tự gửi lại
-4. Thẻ chấm Quên quay lại cuối phiên
-5. Chấm nhầm → hoàn tác lượt gần nhất (phím Z hoặc nút trên mobile)
-6. Phiên chia thành lô 50 thẻ, ưu tiên thẻ quá hạn lâu nhất. Hết lô → tổng kết kèm nút "Ôn tiếp"
-7. Hết thẻ → màn tổng kết: số thẻ đã ôn, tỷ lệ nhớ, streak
+1. Today shows the number of due cards → press "Start review"
+2. See the front → flip (Space or a tap) → self-rate: Forgot / Vaguely / Remembered (keys 1/2/3). A help line under the buttons: rate Forgot if you couldn't recall the answer; rate Vaguely if you were right but had to think for a long time
+3. The app moves to the next card at once and saves the rating in the background; on a network error it resends automatically
+4. Cards rated Forgot come back at the end of the session
+5. Wrong rating → undo the latest rating (Z key or a button on mobile)
+6. A session is split into batches of 50 cards, longest overdue first. End of a batch → summary with a "Keep reviewing" button
+7. No cards left → summary screen: cards reviewed, recall rate, streak
 
-### F7 — Xem tiến độ
+### F7 — View progress
 
-1. Today: streak, thẻ đến hạn, nguồn đang học dở
-2. Library: tìm theo tiêu đề, URL và ghi chú; lọc theo chủ đề và trạng thái; xem tiến độ từng nguồn
+1. Today: streak, due cards, resources in progress
+2. Library: search by title, URL and notes; filter by topic and status; see each resource's progress
 
-### F8 — Xoá nguồn và thẻ
+### F8 — Delete resources and cards
 
-1. Trong trang nguồn, bấm "Xoá nguồn" → xác nhận
-2. Ghi chú của nguồn bị xoá; thẻ được giữ lại và tách khỏi nguồn (`resource_id = null`)
-3. Xoá thẻ đã từng ôn là xoá mềm (`deleted_at`) để giữ `reviews`; xoá thẻ chờ duyệt là xoá hẳn
+1. On the resource page, press "Delete resource" → confirm
+2. The resource's notes are deleted; cards are kept and detached from the resource (`resource_id = null`)
+3. Deleting a card that has been reviewed is a soft delete (`deleted_at`) to keep `reviews`; deleting a pending card is a hard delete
 
-### F9 — Cài đặt và tài khoản
+### F9 — Settings and account
 
-1. Trong Settings, đổi thẻ mới/ngày, múi giờ, ngôn ngữ, giao diện sáng/tối, quản lý chủ đề
-2. Xuất dữ liệu: tải file JSON chứa toàn bộ dữ liệu của mình
-3. Xoá tài khoản: xác nhận → xoá toàn bộ dữ liệu của tài khoản
-4. Đăng xuất: về màn Đăng nhập, dữ liệu vẫn giữ nguyên
+1. In Settings, change new cards per day, time zone, language, light or dark appearance, and manage topics
+2. Export data: download a JSON file with all of the user's data
+3. Delete account: confirm → delete all of the account's data
+4. Sign out: return to the sign-in screen; data stays as it is
 
-## Danh sách màn hình
+## Screens
 
-| Màn hình | Mục đích | Dữ liệu chính | Hành động | Flow |
+| Screen | Purpose | Main data | Actions | Flow |
 | --- | --- | --- | --- | --- |
-| Đăng nhập | Vào app | Câu giới thiệu ngắn | Đăng nhập Google, chuyển ngôn ngữ | F1 |
-| Today | Điểm bắt đầu mỗi ngày | Thẻ đến hạn, streak, nguồn đang học dở, số thẻ chờ duyệt | Bắt đầu ôn, mở nguồn, thêm nguồn | F1, F6, F7 |
-| Library | Quản lý nguồn học | Danh sách nguồn, chủ đề, trạng thái, % | Tìm kiếm, lọc, thêm nguồn | F2, F7 |
-| Thêm / sửa nguồn (modal) | Tạo nguồn từ link | Metadata từ link | Sửa tiêu đề, chọn chủ đề, lưu | F2 |
-| Chi tiết nguồn | Học và ghi chú | Thông tin, tiến độ, ghi chú, thẻ của nguồn | Mở link, ghi chú, chỉnh %, thêm thẻ, xoá nguồn | F3, F4, F8 |
-| Ôn tập | Ôn thẻ đến hạn | Thẻ hiện tại, số thẻ còn lại | Lật, chấm 3 mức, hoàn tác, thoát | F6 |
-| Tổng kết phiên ôn | Phản hồi sau khi ôn | Số thẻ, tỷ lệ nhớ, streak | Ôn tiếp, về Today | F6 |
-| Thẻ | Quản lý thẻ | Danh sách thẻ, tab "Chờ duyệt" | Sửa, duyệt, duyệt tất cả theo nguồn, xoá, tạm ngưng thẻ | F4, F5, F8 |
-| Settings | Cấu hình | Thẻ mới/ngày, múi giờ, ngôn ngữ, giao diện, chủ đề, API token | Đổi cài đặt, quản lý chủ đề, tạo/thu hồi token, xem hướng dẫn MCP, xuất dữ liệu, đăng xuất, xoá tài khoản | F5, F9 |
-| Điều khoản và Quyền riêng tư | Công bố cách dùng dữ liệu | Nội dung tĩnh, 2 ngôn ngữ | Đọc, về màn trước | F1 |
+| Sign-in | Enter the app | Short intro | Sign in with Google, switch language | F1 |
+| Today | Starting point of each day | Due cards, streak, resources in progress, pending card count | Start review, open a resource, add a resource | F1, F6, F7 |
+| Library | Manage resources | Resource list, topics, status, % | Search, filter, add a resource | F2, F7 |
+| Add / edit resource (modal) | Create a resource from a link | Metadata from the link | Edit title, pick topics, save | F2 |
+| Resource detail | Study and take notes | Info, progress, notes and cards of the resource | Open link, take notes, adjust %, add card, delete resource | F3, F4, F8 |
+| Review | Review due cards | Current card, cards remaining | Flip, rate on 3 levels, undo, exit | F6 |
+| Session summary | Feedback after reviewing | Card count, recall rate, streak | Keep reviewing, back to Today | F6 |
+| Cards | Manage cards | Card list, "Pending" tab | Edit, approve, approve all per resource, delete, suspend a card | F4, F5, F8 |
+| Settings | Configuration | New cards per day, time zone, language, appearance, topics, API token | Change settings, manage topics, create or revoke tokens, read the MCP guide, export data, sign out, delete account | F5, F9 |
+| Terms and Privacy | Publish how data is used | Static content, 2 languages | Read, back to the previous screen | F1 |
 
-**Trạng thái cần thiết kế cho mỗi màn:** trống (lần đầu), đang tải, lỗi, dữ liệu dài. Mọi màn có light/dark và đủ 2 ngôn ngữ. Màn Ôn tập và Today ưu tiên mobile.
+**States to design for each screen:** empty (first time), loading, error, long data. Every screen has light and dark and both languages. Review and Today are mobile first.
 
-## Quy tắc nghiệp vụ
+## Business rules
 
-### Loại thẻ
+### Card types
 
-MVP chỉ làm thẻ hỏi–đáp (markdown, code block). Data model có `type` và `extra` để phase 2 thêm: hai chiều, cloze, gõ đáp án, trắc nghiệm, code.
+The MVP has only question-and-answer cards (markdown, code blocks). The data model has `type` and `extra` so phase 2 can add: two-way, cloze, typed answer, multiple choice and code.
 
-### Lịch ôn
+### Review schedule
 
-- **Thuật toán:** FSRS qua `ts-fsrs`, bật learning steps để thẻ Quên quay lại trong phiên
-- **3 mức chấm:** Quên → Again, Mang máng → Hard, Nhớ rõ → Good (ẩn Easy)
-- **Thẻ mới:** tối đa 20 thẻ/ngày, chỉnh trong Settings; thẻ đến hạn không giới hạn. Khi còn backlog thẻ đến hạn, tạm dừng thẻ mới
-- **Ngày:** theo múi giờ người dùng, ngày mới bắt đầu lúc 04:00
-- **Streak:** số ngày liên tiếp có ít nhất 1 lượt ôn. Ngày không có thẻ đến hạn không làm đứt streak, cũng không cộng thêm
-- **Tạm ngưng thẻ:** thẻ bị tạm ngưng không xuất hiện trong lịch ôn cho tới khi bật lại
-- **Phiên ôn:** lô 50 thẻ, ưu tiên thẻ quá hạn lâu nhất; phiên kết thúc khi hết thẻ
-- **Tỷ lệ nhớ:** chỉ tính lượt chấm đầu tiên của mỗi thẻ trong phiên
-- **Hoàn tác:** khôi phục lượt chấm gần nhất
-- **Lịch sử:** mọi lượt chấm lưu vào `reviews`, kèm trạng thái FSRS trước khi chấm
+- **Algorithm:** FSRS through `ts-fsrs`, with learning steps on so Forgot cards return within the session
+- **3 ratings:** Forgot → Again, Vaguely → Hard, Remembered → Good (Easy is hidden)
+- **New cards:** at most 20 per day, adjustable in Settings; due cards have no limit. While there is a backlog of due cards, new cards pause
+- **Day:** follows the user's time zone; a new day starts at 04:00
+- **Streak:** consecutive days with at least 1 review. A day with no due cards neither breaks the streak nor adds to it
+- **Suspended cards:** a suspended card stays out of the schedule until it is turned back on
+- **Review session:** batches of 50 cards, longest overdue first; the session ends when no cards are left
+- **Recall rate:** counts only the first rating of each card in a session
+- **Undo:** restores the latest rating
+- **History:** every rating is saved in `reviews`, with the FSRS state from before the rating
 
 ### MCP server (slice S6)
 
-App cung cấp MCP server để Claude đọc dữ liệu và tạo thẻ. Việc sinh thẻ do Claude của người dùng đảm nhận, nên app không gọi Claude API.
+The app provides an MCP server so Claude can read data and create cards. The user's own Claude generates the cards, so the app does not call the Claude API.
 
-- **Endpoint:** `/api/mcp`, Streamable HTTP, chạy cùng codebase web
-- **Xác thực:** personal API token tạo trong Settings, gửi qua `Authorization: Bearer <token>`; lưu dạng hash, thu hồi được
-- **Client:** Claude Code và các client cấu hình được header. Connector trên claude.ai cần OAuth, để phase 2; người dùng không có client phù hợp thì tạo thẻ thủ công
-- **Phạm vi:** mỗi token chỉ truy cập dữ liệu của chủ token
+- **Endpoint:** `/api/mcp`, Streamable HTTP, running in the same codebase as the web app
+- **Auth:** a personal API token created in Settings, sent through `Authorization: Bearer <token>`; stored as a hash and revocable
+- **Client:** Claude Code and clients that can set headers. The claude.ai connector needs OAuth and waits for phase 2; users without a suitable client create cards by hand
+- **Scope:** each token reaches only its owner's data
 
-| Tool | Input | Kết quả |
+| Tool | Input | Result |
 | --- | --- | --- |
-| `search_resources` | `query`, `topic?`, `status?` | Nguồn khớp theo tiêu đề, URL, ghi chú (id, tiêu đề, chủ đề, %) |
-| `get_resource` | `resource_id` | Thông tin nguồn, ghi chú, thẻ đã có |
-| `add_resource` | `url`, `topics?`, `status?` | Nguồn mới tạo |
-| `add_note` | `resource_id`, `content` | Ghi chú mới trong nguồn, không đụng ghi chú đang sửa |
-| `create_cards` | `resource_id?`, `cards[{type, front, back}]` | Thẻ ở trạng thái **chờ duyệt** |
-| `get_study_stats` | `range?` | Streak, số thẻ đến hạn, tỷ lệ nhớ |
+| `search_resources` | `query`, `topic?`, `status?` | Resources matching title, URL or notes (id, title, topics, %) |
+| `get_resource` | `resource_id` | Resource info, notes and existing cards |
+| `add_resource` | `url`, `topics?`, `status?` | The new resource |
+| `add_note` | `resource_id`, `content` | A new note on the resource, never touching a note being edited |
+| `create_cards` | `resource_id?`, `cards[{type, front, back}]` | Cards with status **pending** |
+| `get_study_stats` | `range?` | Streak, due card count, recall rate |
 
-**Quy tắc an toàn:** MCP không có tool xoá. Thẻ do MCP tạo luôn phải được duyệt trong app. Mọi tool dùng chung tầng `domain` nên áp dụng cùng phân quyền, rate limit và hạn mức. Phản hồi của tool không dịch theo ngôn ngữ giao diện.
+**Safety rules:** MCP has no delete tool. Cards created through MCP must always be approved in the app. Every tool shares the `domain` layer, so the same authorization, rate limit and account limits apply. Tool responses are not translated to the interface language.
 
-## Data model sơ bộ
+## Data model
 
-Mọi bảng có `user_id`. Tầng `domain` là lớp phân quyền chính: mọi hàm truy vấn bắt buộc nhận `userId`, và có test chặn đọc chéo giữa hai user. RLS bật trên mọi bảng nhưng không có policy, để khoá đường truy cập qua API công khai của Supabase. Liên kết giữa các bảng dùng khoá ngoại ghép `(id, user_id)`, nên database từ chối dòng trỏ sang dữ liệu của user khác.
+Every table has `user_id`. The `domain` layer is the main authorization layer: every query function must take a `userId`, and tests block cross-user reads between two users. RLS is on for every table with no policies, which closes access through Supabase's public API. Links between tables use composite foreign keys on `(id, user_id)`, so the database refuses a row that points at another user's data.
 
-| Bảng | Field chính | Ghi chú |
+| Table | Main fields | Notes |
 | --- | --- | --- |
-| `topics` | id, user_id, name, color | Chủ đề người dùng tự tạo |
-| `resources` | id, user_id, url, normalized_url, title, type, thumbnail_url, status, progress (0–100), created_at, updated_at | type: article / video / course / doc / other; status: want / learning / done; `url` giữ link gốc; cảnh báo trùng theo user_id + normalized_url |
-| `resource_topics` | user_id, resource_id, topic_id | Nhiều–nhiều |
-| `notes` | id, user_id, resource_id, content_md, created_at, updated_at | Một nguồn có nhiều ghi chú |
-| `cards` | id, user_id, resource_id?, type, front, back, extra (jsonb), status, source, created_at, deleted_at | status: pending / active / suspended; source: manual / mcp; deleted_at: xoá mềm thẻ đã ôn |
-| `card_schedules` | card_id, user_id, due, stability, difficulty, learning_steps, reps, lapses, state, last_review | Trạng thái FSRS, tách khỏi nội dung thẻ |
-| `reviews` | id, card_id, user_id, rating, reviewed_at, elapsed_days, scheduled_days, idempotency_key, prev_schedule (jsonb) | Lịch sử chấm; idempotency_key chống trùng, prev_schedule để hoàn tác |
+| `topics` | id, user_id, name, color | Topics the user creates |
+| `resources` | id, user_id, url, normalized_url, title, type, thumbnail_url, status, progress (0–100), created_at, updated_at | type: article / video / course / doc / other; status: want / learning / done; `url` keeps the original link; duplicate warning by user_id + normalized_url |
+| `resource_topics` | user_id, resource_id, topic_id | Many-to-many |
+| `notes` | id, user_id, resource_id, content_md, created_at, updated_at | A resource has many notes |
+| `cards` | id, user_id, resource_id?, type, front, back, extra (jsonb), status, source, created_at, deleted_at | status: pending / active / suspended; source: manual / mcp; deleted_at: soft delete of reviewed cards |
+| `card_schedules` | card_id, user_id, due, stability, difficulty, learning_steps, reps, lapses, state, last_review | FSRS state, kept apart from card content |
+| `reviews` | id, card_id, user_id, rating, reviewed_at, elapsed_days, scheduled_days, idempotency_key, prev_schedule (jsonb) | Rating history; idempotency_key prevents duplicates, prev_schedule enables undo |
 | `user_settings` | user_id, new_cards_per_day (20), timezone, locale | |
-| `api_tokens` | id, user_id, name, token_hash, last_used_at, revoked_at | Cho MCP |
+| `api_tokens` | id, user_id, name, token_hash, last_used_at, revoked_at | For MCP |
 
-**Quan hệ:** topic ⟷ resource (nhiều–nhiều) · resource → notes, cards (một–nhiều) · card → card_schedule (một–một), reviews (một–nhiều).
+**Relations:** topic ⟷ resource (many-to-many) · resource → notes, cards (one-to-many) · card → card_schedule (one-to-one), reviews (one-to-many).
 
 ## Non-functional
 
-- **Auth:** Supabase Auth, chỉ đăng nhập Google ở MVP
-- **Phân quyền:** ở tầng `domain`; bật RLS không policy trên mọi bảng; API token lưu hash; không lưu nội dung trang của link, chỉ metadata
-- **Nền tảng:** web responsive; màn Ôn tập và Today thiết kế mobile-first
-- **Hiệu năng:** chuyển thẻ dưới 200 ms: đặt server ở Singapore, tải trước lô thẻ, gửi lượt chấm nền qua Route Handler với hàng đợi trong `localStorage` và khoá chống trùng
-- **Trải nghiệm:** phím tắt khi ôn (Space lật, 1/2/3 chấm, Z hoàn tác); dark mode chọn Sáng/Tối trong Settings, lưu theo trình duyệt, mặc định Sáng; ghi chú tự lưu
-- **Ngôn ngữ:** tiếng Việt và tiếng Anh qua `next-intl`, không đưa ngôn ngữ vào URL; lưu ở `user_settings.locale` và cookie. Dịch giao diện, thông báo lỗi, trang Điều khoản và hướng dẫn MCP; không dịch nội dung người dùng. Có test báo lỗi khi hai file ngôn ngữ lệch key. Root layout đọc ngôn ngữ từ cookie để đặt `<html lang>`, nên đặt `instant = false` và mọi route chờ server; code trong `"use cache"` nhận ngôn ngữ qua tham số
-- **Chống lạm dụng:** khi tải link chỉ nhận http và https, chặn IP nội bộ, kiểm tra lại sau mỗi lần redirect, timeout 5 giây, đọc tối đa 1 MB. Rate limit theo user, lưu bằng Postgres. Hạn mức mỗi tài khoản: 2.000 nguồn, 10.000 thẻ, 100 KB mỗi ghi chú. Link dài tối đa 2.048 ký tự, tiêu đề nguồn 500 ký tự
-- **Tìm kiếm:** trong tiêu đề, URL và ghi chú, không phân biệt dấu tiếng Việt (`unaccent` và `pg_trgm`); Library và MCP dùng chung một hàm
-- **Dữ liệu người dùng:** có trang Điều khoản và Quyền riêng tư, xoá tài khoản và xuất JSON
-- **Không yêu cầu:** offline
+- **Auth:** Supabase Auth, Google sign-in only in the MVP
+- **Authorization:** in the `domain` layer; RLS on with no policies on every table; API tokens stored as hashes; page content of links is never stored, only metadata
+- **Platform:** responsive web; Review and Today are designed mobile first
+- **Performance:** card changes take under 200 ms: servers in Singapore, prefetched card batches, ratings sent in the background through a Route Handler with a `localStorage` queue and a duplicate-prevention key
+- **Experience:** keyboard shortcuts when reviewing (Space flips, 1/2/3 rate, Z undoes); dark mode chosen as Light or Dark in Settings, stored per browser, light by default; notes auto-save
+- **Language:** Vietnamese and English through `next-intl`, with no language in the URL; stored in `user_settings.locale` and a cookie. The interface, error messages, Terms page and MCP guide are translated; user content is not. A test fails when the two message files have different keys. The root layout reads the language from a cookie to set `<html lang>`, so it sets `instant = false` and every route waits for the server; code in `"use cache"` takes the language as a parameter
+- **Abuse protection:** link fetching accepts only http and https, blocks internal IPs, re-checks after every redirect, times out after 5 seconds and reads at most 1 MB. Rate limit per user, stored in Postgres. Limits per account: 2,000 resources, 10,000 cards, 100 KB per note. Links are at most 2,048 characters and resource titles 500 characters
+- **Search:** in title, URL and notes, ignoring Vietnamese accents (`unaccent` and `pg_trgm`); Library and MCP share one function
+- **User data:** Terms and Privacy pages, account deletion and JSON export
+- **Not required:** offline use
 
 ### Tech stack
 
-| Phần | Lựa chọn |
+| Part | Choice |
 | --- | --- |
-| Web + API | Next.js (App Router, TypeScript), Server Actions và Route Handlers |
+| Web + API | Next.js (App Router, TypeScript), Server Actions and Route Handlers |
 | UI | Tailwind CSS + shadcn/ui |
 | Database, Auth | Supabase (Postgres, Auth) |
 | ORM | Drizzle |
-| Lịch ôn | `ts-fsrs` |
-| MCP | Route `/api/mcp` dùng MCP TypeScript SDK |
-| Đa ngôn ngữ | `next-intl` |
-| Theo dõi lỗi | Sentry (gói miễn phí) |
-| Test | Vitest (logic), Playwright (luồng chính) |
+| Review schedule | `ts-fsrs` |
+| MCP | Route `/api/mcp` using the MCP TypeScript SDK |
+| Internationalization | `next-intl` |
+| Error tracking | Sentry (free plan) |
+| Testing | Vitest (logic), Playwright (main flows) |
 
-**Kiến trúc code:** logic nghiệp vụ (lịch ôn, streak, quyền) đặt trong tầng `domain` thuần TypeScript, dùng chung cho UI, Server Actions và MCP.
+**Code architecture:** business logic (schedule, streak, authorization) lives in a pure TypeScript `domain` layer, shared by the UI, Server Actions and MCP.
 
 ### Deploy
 
-- **Vercel:** Next.js (gồm API và MCP endpoint), region Singapore, chạy trên `*.vercel.app`. Merge vào `main` thì deploy production; tắt preview deploy
-- **Supabase Cloud:** một project cho production, region Singapore
-- **Local:** Supabase CLI và Docker, `seed.sql` có sẵn 2 user để test đọc chéo. Đăng nhập test chỉ bật ở local; build production fail nếu cờ này đang bật
-- **Migration:** lệnh `db:migrate:prod` chạy tay trước khi merge code: tự `pg_dump`, rồi migrate. Mỗi migration phải tương thích với code đang chạy; xoá cột thì tách thành 2 lần release
-- **Sao lưu:** `pg_dump` hằng đêm, mã hoá, lưu 14 ngày trong GitHub Actions của repo private
-- **Chi phí:** dùng gói miễn phí trước; MVP không thu tiền và không chạy quảng cáo. Chỉ nâng gói khi thực sự cần
+- **Vercel:** Next.js (including the API and MCP endpoint), Singapore region, on `*.vercel.app`. Merging into `main` deploys to production; preview deploys are off
+- **Supabase Cloud:** one project for production, Singapore region
+- **Local:** Supabase CLI and Docker, with `seed.sql` providing 2 users for cross-user read tests. Test sign-in is on locally only; the production build fails if its flag is on
+- **Migration:** the `db:migrate:prod` command runs by hand before merging code: it runs `pg_dump`, then migrates. Each migration must work with the running code; removing a column takes 2 releases
+- **Backup:** nightly `pg_dump`, encrypted, kept for 14 days in GitHub Actions of the private repo
+- **Cost:** start on free plans; the MVP charges nothing and runs no ads. Upgrade only when really needed
 
 ## MVP
 
-**MVP xong khi** thiết kế, S0–S5 và Settings tối thiểu chạy trên production. S6 (MCP) làm ngay sau đó.
+**The MVP is done when** the design, S0–S5 and minimal Settings run on production. S6 (MCP) follows right after.
 
-| Trong phạm vi | Ngoài phạm vi (để sau) |
+| In scope | Out of scope (later) |
 | --- | --- |
-| Đăng ký, đăng nhập bằng Google | Đăng nhập magic link (khi có tên miền và SMTP riêng) |
-| Thêm nguồn bằng link, tự lấy tiêu đề và ảnh | Tải lên PDF |
-| Chủ đề tự tạo, gắn nhiều chủ đề cho một nguồn | Lộ trình học theo thứ tự |
-| Trạng thái nguồn và tiến độ % | Ghi chú theo mốc thời gian video |
-| Ghi chú markdown theo nguồn | Dùng offline |
-| Thẻ hỏi–đáp, tạo thủ công | Các loại thẻ khác |
-| Ôn tập theo lịch spaced repetition, hoàn tác lượt gần nhất | Import từ bookmark, Anki, Notion |
-| Dashboard Today, tiến độ, streak | Chia sẻ thư viện, extension trình duyệt |
-| Giao diện tiếng Việt và tiếng Anh | Nhắc ôn qua email hoặc push |
-| Điều khoản, Quyền riêng tư, xoá tài khoản, xuất JSON | Landing page riêng |
-| Chống SSRF, rate limit, hạn mức theo tài khoản | Thu phí, quảng cáo |
-| MCP server (slice S6, ngay sau MVP) | Kết nối MCP qua OAuth; preview deploy, staging |
+| Sign up and sign in with Google | Magic link sign-in (once there is a domain and SMTP) |
+| Add a resource by link, with title and image fetched automatically | PDF upload |
+| User-created topics, several topics per resource | Ordered learning paths |
+| Resource status and progress % | Notes at video timestamps |
+| Markdown notes per resource | Offline use |
+| Question-and-answer cards, created by hand | Other card types |
+| Review on a spaced repetition schedule, undo the latest rating | Import from bookmarks, Anki, Notion |
+| Today dashboard, progress, streak | Library sharing, browser extension |
+| Vietnamese and English interface | Review reminders by email or push |
+| Terms, Privacy, account deletion, JSON export | Separate landing page |
+| SSRF protection, rate limit, per-account limits | Payments, ads |
+| MCP server (slice S6, right after the MVP) | MCP connection through OAuth; preview deploys, staging |
 
 ### Milestones
 
-Thứ tự theo kit: thiết kế đủ 10 màn, rồi `/plan-arch`, rồi `/slice` từng phần. S0 làm song song với thiết kế. Ước tính với 1–2 giờ mỗi tối.
+Order follows the kit: design all 10 screens, then `/plan-arch`, then `/slice` each part. S0 runs alongside design. Estimates assume 1–2 hours each evening.
 
-| Slice | Nội dung | Ước tính |
+| Slice | Content | Estimate |
 | --- | --- | --- |
-| D — Thiết kế | Design system và prototype đủ 10 màn: trạng thái, light/dark, mobile | 5–6 tối |
-| S0 — Nền tảng | Repo và bộ file kit, ghim Node và pnpm, Supabase local và seed, Google auth, schema, khung ngôn ngữ, Sentry, sao lưu, `db:migrate:prod`, deploy khung lên Vercel | 4 tối |
-| S1 — Library | Thêm nguồn từ link an toàn, chống trùng, chủ đề, danh sách, bộ lọc, tìm kiếm, rate limit và hạn mức | 3–4 tối |
-| S2 — Chi tiết nguồn | Nhiều ghi chú markdown tự lưu, tiến độ %, trạng thái, xoá nguồn | 2 tối |
-| S3 — Thẻ | Tạo, sửa, tạm ngưng, xoá thẻ hỏi–đáp | 1–2 tối |
-| S4 — Ôn tập | Phiên ôn với FSRS, learning steps, lô 50 thẻ, hàng đợi lưu nền, hoàn tác, phím tắt, tổng kết | 4 tối |
-| S5 — Today và Settings | Dashboard, streak, Settings, chuyển ngôn ngữ, Điều khoản, xuất dữ liệu, xoá tài khoản | 3–4 tối |
-| S6 — MCP (sau MVP) | API token, endpoint `/api/mcp`, 6 tool, tab "Chờ duyệt", "Duyệt tất cả" | 3 tối |
+| D — Design | Design system and prototype for all 10 screens: states, light/dark, mobile | 5–6 evenings |
+| S0 — Foundation | Repo and kit files, pinned Node and pnpm, local Supabase and seed, Google auth, schema, language setup, Sentry, backup, `db:migrate:prod`, skeleton deploy to Vercel | 4 evenings |
+| S1 — Library | Add resources from links safely, duplicate prevention, topics, list, filters, search, rate limit and account limits | 3–4 evenings |
+| S2 — Resource detail | Multiple auto-saving markdown notes, progress %, status, delete resource | 2 evenings |
+| S3 — Cards | Create, edit, suspend and delete question-and-answer cards | 1–2 evenings |
+| S4 — Review | Review session with FSRS, learning steps, batches of 50 cards, background save queue, undo, shortcuts, summary | 4 evenings |
+| S5 — Today and Settings | Dashboard, streak, Settings, language switch, Terms, data export, account deletion | 3–4 evenings |
+| S6 — MCP (after the MVP) | API token, `/api/mcp` endpoint, 6 tools, "Pending" tab, "Approve all" | 3 evenings |
 
-Tổng khoảng 25–30 tối, gồm 22–26 tối cho MVP và 3 tối cho S6. 2 tuần là mục tiêu mềm, không phải cam kết.
+In total about 25–30 evenings: 22–26 for the MVP and 3 for S6. Two weeks is a soft target, not a commitment.

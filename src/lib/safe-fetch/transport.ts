@@ -36,9 +36,10 @@ type TransportOptions = {
 class BlockedAddressError extends Error {}
 
 /**
- * IP được kiểm tra ngay lúc socket kết nối, nên DNS đổi kết quả sau bước kiểm
- * tra (DNS rebinding) cũng không lọt. Node không gọi `lookup` với IP viết thẳng
- * trong URL; `fetchSafely` chặn trường hợp đó trước khi gọi transport.
+ * The IP is checked at the moment the socket connects, so DNS changing its
+ * answer after the check (DNS rebinding) can't get through. Node doesn't call
+ * `lookup` for an IP written in the URL; `fetchSafely` blocks that case before
+ * calling the transport.
  */
 function guardedLookup(
   resolve: ResolveHost,
@@ -83,7 +84,7 @@ function readBody(
   response.on("error", onError);
 }
 
-/** Một lượt GET, không tự theo redirect. */
+/** One GET that doesn't follow redirects. */
 export function createTransport({
   resolve = (hostname) => dnsLookup(hostname, { all: true }),
   isBlocked = isBlockedAddress,
@@ -98,7 +99,7 @@ export function createTransport({
       }
 
       const client = url.protocol === "https:" ? https : http;
-      // `agent: false` là bắt buộc: agent mặc định dùng lại socket cũ và bỏ qua `lookup`.
+      // `agent: false` is required: the default agent reuses sockets and skips `lookup`.
       const request = client.request(url, {
         agent: false,
         lookup,
@@ -128,7 +129,7 @@ export function createTransport({
         );
       });
 
-      // Node không phát `response` với 101, nên thiếu dòng này sẽ treo tới deadline.
+      // Node doesn't emit `response` for a 101, so without this it hangs until the deadline.
       request.on("upgrade", () => fail("network_error"));
 
       request.on("response", (response) => {
