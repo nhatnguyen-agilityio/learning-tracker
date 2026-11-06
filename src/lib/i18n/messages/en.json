@@ -261,5 +261,67 @@
     "errorTitle": "Could not load today’s data",
     "errorBody": "Check your connection and try again.",
     "retry": "Try again"
+  },
+  "legal": {
+    "back": "Back",
+    "tabs": "Legal pages",
+    "terms": "Terms",
+    "privacy": "Privacy",
+    "termsTitle": "Terms of use",
+    "privacyTitle": "Privacy policy",
+    "updated": "Last updated: {date}",
+    "contactTitle": "Contact",
+    "termsSections": {
+      "s1": {
+        "title": "The service",
+        "body": "Learning Tracker is free and provided as it is. We don't promise that it will always be available or free of errors."
+      },
+      "s2": {
+        "title": "Your content",
+        "body": "You own what you add, and you are responsible for it."
+      },
+      "s3": {
+        "title": "Acceptable use",
+        "body": "Don't use the app to harm its systems or other people."
+      },
+      "s4": {
+        "title": "Your data",
+        "body": "If your data matters to you, export it from time to time."
+      },
+      "s5": {
+        "title": "Account limits",
+        "body": "Each account can hold up to 2,000 sources, 10,000 cards and 5,000 notes."
+      },
+      "s6": {
+        "title": "Changes",
+        "body": "These terms can change. The date at the top of this page shows the latest update."
+      }
+    },
+    "privacySections": {
+      "s1": {
+        "title": "What we collect",
+        "body": "Your email and name from your Google account, plus your sources, notes, cards, review history and settings."
+      },
+      "s2": {
+        "title": "Why we use it",
+        "body": "Only to run the app: to store what you learn and work out your review schedule. We don't sell your data or use it for advertising."
+      },
+      "s3": {
+        "title": "Where it is stored",
+        "body": "Your data is stored with Supabase in Singapore. The app runs on Vercel in Singapore. Sentry receives technical error reports."
+      },
+      "s4": {
+        "title": "Links you add",
+        "body": "The app visits a link you add to read its title and image."
+      },
+      "s5": {
+        "title": "Cookies and browser storage",
+        "body": "We use them for your session, language, appearance and ratings not yet sent. We don't use tracking cookies."
+      },
+      "s6": {
+        "title": "Your rights",
+        "body": "You can export all of your data as JSON and delete your account in Settings. Deleting your account deletes all of your data."
+      }
+    }
   }
 }
