@@ -22,6 +22,15 @@ async function handle(request: Request) {
     return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   }
 
+  // A batch would run many calls for one count of the rate limit.
+  const body: unknown = await request
+    .clone()
+    .json()
+    .catch(() => null);
+  if (Array.isArray(body)) {
+    return NextResponse.json({ error: "batch_not_supported" }, { status: 400 });
+  }
+
   // Stateless: serverless functions can't keep a session between requests.
   const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
