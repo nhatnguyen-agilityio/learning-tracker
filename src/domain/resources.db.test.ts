@@ -1,10 +1,12 @@
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
-import { resources } from "@/lib/db/schema";
+import { cards, notes, resources } from "@/lib/db/schema";
 import { SEEDED_USERS, withTestDb } from "@/lib/db/test-db";
 import type { Db } from "@/lib/db/types";
 import {
+  countResourceCards,
   createResource,
+  deleteResource,
   findResourceByUrl,
   getResource,
   listResources,
@@ -442,5 +444,74 @@ describe("setting status", () => {
       expect(await getResource(db, userB, id)).toMatchObject({
         status: "want",
       });
+    }));
+});
+
+async function addCard(db: Db, userId: string, resourceId: string) {
+  const [card] = await db
+    .insert(cards)
+    .values({ userId, resourceId, front: "Front", back: "Back" })
+    .returning({ id: cards.id });
+  return card.id;
+}
+
+describe("deleting resources", () => {
+  it("should delete the notes and keep the cards without a resource", () =>
+    withTestDb(async (db) => {
+      const id = await addResource(db, userA, "to-delete");
+      await db.insert(notes).values({ userId: userA, resourceId: id });
+      const cardId = await addCard(db, userA, id);
+
+      expect(await deleteResource(db, userA, id)).toBe(true);
+
+      expect(await getResource(db, userA, id)).toBeNull();
+      expect(
+        await db
+          .select({ id: notes.id })
+          .from(notes)
+          .where(eq(notes.resourceId, id)),
+      ).toEqual([]);
+      expect(
+        await db
+          .select({ resourceId: cards.resourceId })
+          .from(cards)
+          .where(eq(cards.id, cardId)),
+      ).toEqual([{ resourceId: null }]);
+    }));
+
+  it("should not delete another user's resource", () =>
+    withTestDb(async (db) => {
+      const id = await addResource(db, userB, "from-b");
+
+      expect(await deleteResource(db, userA, id)).toBe(false);
+      expect(await getResource(db, userB, id)).not.toBeNull();
+    }));
+
+  it("should return false when the id is not valid", () =>
+    withTestDb(async (db) => {
+      expect(await deleteResource(db, userA, "nope")).toBe(false);
+    }));
+});
+
+describe("counting cards of a resource", () => {
+  it("should leave out deleted cards", () =>
+    withTestDb(async (db) => {
+      const id = await addResource(db, userA, "cards");
+      await addCard(db, userA, id);
+      const deletedId = await addCard(db, userA, id);
+      await db
+        .update(cards)
+        .set({ deletedAt: new Date() })
+        .where(eq(cards.id, deletedId));
+
+      expect(await countResourceCards(db, userA, id)).toBe(1);
+    }));
+
+  it("should not count another user's cards", () =>
+    withTestDb(async (db) => {
+      const id = await addResource(db, userB, "from-b");
+      await addCard(db, userB, id);
+
+      expect(await countResourceCards(db, userA, id)).toBe(0);
     }));
 });

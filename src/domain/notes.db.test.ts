@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { SEEDED_USERS, withTestDb } from "@/lib/db/test-db";
 import type { Db } from "@/lib/db/types";
-import { MAX_NOTE_BYTES, noteBytes } from "./note-limits";
+import { notes } from "@/lib/db/schema";
+import { MAX_NOTE_BYTES, MAX_NOTES_PER_USER, noteBytes } from "./note-limits";
 import { createNote, deleteNote, listNotes, updateNote } from "./notes";
 import { createResource } from "./resources";
 
@@ -78,6 +79,24 @@ describe("creating notes", () => {
       );
 
       expect(result?.kind).toBe("created");
+    }));
+
+  it("should refuse a new note when the account has reached the limit", () =>
+    withTestDb(async (db) => {
+      const resourceId = await addResource(db, userA);
+      await db.insert(notes).values(
+        Array.from({ length: MAX_NOTES_PER_USER }, () => ({
+          userId: userA,
+          resourceId,
+        })),
+      );
+      const otherResource = await addResource(db, userB);
+
+      const refused = await createNote(db, userA, resourceId);
+      const otherUser = await createNote(db, userB, otherResource);
+
+      expect(refused).toEqual({ kind: "limit_reached" });
+      expect(otherUser?.kind).toBe("created");
     }));
 
   it("should not add a note to another user's resource", () =>

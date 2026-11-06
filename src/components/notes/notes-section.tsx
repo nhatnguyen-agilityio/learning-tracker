@@ -17,12 +17,20 @@ export function NotesSection({
 }) {
   const t = useTranslations("notes");
   const [notes, setNotes] = useState(initialNotes);
+  const [addError, setAddError] = useState<"limit" | "failed" | null>(null);
   const [adding, startAdding] = useTransition();
 
   function add() {
     startAdding(async () => {
-      const note = await addNote(resourceId);
-      if (note) setNotes((current) => [...current, note]);
+      const result = await addNote(resourceId).catch(
+        () => ({ kind: "failed" }) as const,
+      );
+      if (result.kind === "created") {
+        setAddError(null);
+        setNotes((current) => [...current, result.note]);
+      } else {
+        setAddError(result.kind === "limit_reached" ? "limit" : "failed");
+      }
     });
   }
 
@@ -34,6 +42,11 @@ export function NotesSection({
           {t("add")}
         </Button>
       </div>
+      {addError ? (
+        <p role="alert" className="text-sm text-destructive">
+          {t(addError === "limit" ? "limitReached" : "addFailed")}
+        </p>
+      ) : null}
       {notes.length === 0 ? (
         <p className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">
           {t("empty")}

@@ -1,5 +1,5 @@
-import { and, count, desc, eq } from "drizzle-orm";
-import { resources } from "@/lib/db/schema";
+import { and, count, desc, eq, isNull } from "drizzle-orm";
+import { cards, resources } from "@/lib/db/schema";
 import type { Db } from "@/lib/db/types";
 import { normalizeUrl } from "./normalize-url";
 import {
@@ -213,4 +213,41 @@ export async function setResourceStatus(
     .where(and(eq(resources.userId, userId), eq(resources.id, resourceId)))
     .returning(resourceFields);
   return resource ? ({ kind: "updated", resource } as const) : null;
+}
+
+/** Cards of a resource, leaving out the ones the user has already deleted. */
+export async function countResourceCards(
+  db: Db,
+  userId: string,
+  resourceId: string,
+) {
+  const [{ total }] = await db
+    .select({ total: count() })
+    .from(cards)
+    .where(
+      and(
+        eq(cards.userId, userId),
+        eq(cards.resourceId, resourceId),
+        isNull(cards.deletedAt),
+      ),
+    );
+  return total;
+}
+
+/**
+ * Notes go with the resource; cards stay with `resource_id` set to null, both
+ * through the foreign keys. Returns false for another user's resource.
+ */
+export async function deleteResource(
+  db: Db,
+  userId: string,
+  resourceId: string,
+) {
+  if (!isUuid(resourceId)) return false;
+
+  const deleted = await db
+    .delete(resources)
+    .where(and(eq(resources.userId, userId), eq(resources.id, resourceId)))
+    .returning({ id: resources.id });
+  return deleted.length > 0;
 }

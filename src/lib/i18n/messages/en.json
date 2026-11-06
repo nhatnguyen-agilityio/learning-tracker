@@ -112,7 +112,9 @@
     "saved": "Saved",
     "failed": "Could not save. Your text is still here.",
     "tooLarge": "This note is over the 100 KB limit. Shorten it to save.",
-    "size": "{used} of {max} KB"
+    "size": "{used} of {max} KB",
+    "limitReached": "You've reached the limit of 5,000 notes. Delete some to add more.",
+    "addFailed": "Could not add a note. Try again."
   },
   "progress": {
     "label": "Progress",
@@ -123,5 +125,15 @@
     "suggestDone": "You reached 100%. Mark this source as Done?",
     "markDone": "Mark as Done",
     "notNow": "Not now"
+  },
+  "deleteResource": {
+    "button": "Delete source",
+    "title": "Delete this source?",
+    "body": "{notes, plural, one {# note} other {# notes}} will be deleted permanently. {cards, plural, one {# card stays} other {# cards stay}}, no longer linked to a source.",
+    "emptyBody": "This source has no notes or cards. This cannot be undone.",
+    "cancel": "Cancel",
+    "withNotes": "Delete source and notes",
+    "deleting": "Deleting",
+    "failed": "Could not delete this source. Try again."
   }
 }

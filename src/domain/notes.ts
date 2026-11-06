@@ -1,7 +1,7 @@
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, count, eq } from "drizzle-orm";
 import { notes } from "@/lib/db/schema";
 import type { Db } from "@/lib/db/types";
-import { isNoteTooLarge } from "./note-limits";
+import { isNoteTooLarge, MAX_NOTES_PER_USER } from "./note-limits";
 import { getResource } from "./resources";
 import { isUuid } from "./uuid";
 
@@ -28,14 +28,22 @@ export async function createNote(
 ) {
   if (isNoteTooLarge(contentMd)) return { kind: "too_large" } as const;
 
-  const resource = await getResource(db, userId, resourceId);
-  if (!resource) return null;
+  return db.transaction(async (tx) => {
+    const resource = await getResource(tx, userId, resourceId);
+    if (!resource) return null;
 
-  const [note] = await db
-    .insert(notes)
-    .values({ userId, resourceId, contentMd })
-    .returning(noteFields);
-  return { kind: "created", note } as const;
+    const [{ total }] = await tx
+      .select({ total: count() })
+      .from(notes)
+      .where(eq(notes.userId, userId));
+    if (total >= MAX_NOTES_PER_USER) return { kind: "limit_reached" } as const;
+
+    const [note] = await tx
+      .insert(notes)
+      .values({ userId, resourceId, contentMd })
+      .returning(noteFields);
+    return { kind: "created", note } as const;
+  });
 }
 
 /** Returns null for another user's note, the same as for a missing one. */
