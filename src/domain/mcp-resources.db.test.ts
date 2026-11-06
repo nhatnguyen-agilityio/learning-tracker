@@ -1,10 +1,11 @@
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
-import { cards, resources, topics } from "@/lib/db/schema";
+import { cards, rateLimits, resources, topics } from "@/lib/db/schema";
 import { SEEDED_USERS, withTestDb } from "@/lib/db/test-db";
 import type { Db } from "@/lib/db/types";
 import { createCard } from "./cards";
 import {
+  addResourceForMcp,
   getResourceForMcp,
   MAX_SEARCH_RESULTS,
   searchResourcesForMcp,
@@ -157,5 +158,103 @@ describe("reading a resource for MCP", () => {
   it("should return null when the id is not valid", () =>
     withClean(async (db) => {
       expect(await getResourceForMcp(db, userA, "nope")).toBeNull();
+    }));
+});
+
+describe("adding a resource for MCP", () => {
+  const url = () => `https://mcp.test/${crypto.randomUUID()}`;
+  const details = {
+    title: "From the page",
+    thumbnailUrl: null,
+    type: "article" as const,
+  };
+  const lookup = async () => details;
+
+  it("should use the page title and add the topics", () =>
+    withClean(async (db) => {
+      const result = await addResourceForMcp(
+        db,
+        userA,
+        { url: url(), topics: ["Rust", "rust", "Go"], status: "learning" },
+        lookup,
+      );
+      if (result.kind !== "created") throw new Error("Resource not created");
+
+      const resource = await getResourceForMcp(db, userA, result.resource.id);
+
+      expect(resource).toMatchObject({
+        title: "From the page",
+        status: "learning",
+        topics: ["Go", "Rust"],
+      });
+    }));
+
+  it("should use the link when the page has no title", () =>
+    withClean(async (db) => {
+      const link = url();
+
+      const result = await addResourceForMcp(
+        db,
+        userA,
+        { url: link },
+        async () => ({
+          ...details,
+          title: null,
+        }),
+      );
+
+      expect(result).toMatchObject({ resource: { title: link } });
+    }));
+
+  it("should return the existing resource without reading the page", () =>
+    withClean(async (db) => {
+      const link = url();
+      await addResourceForMcp(db, userA, { url: link }, lookup);
+      let calls = 0;
+
+      const result = await addResourceForMcp(
+        db,
+        userA,
+        { url: link },
+        async () => {
+          calls += 1;
+          return details;
+        },
+      );
+
+      expect(result.kind).toBe("duplicate");
+      expect(calls).toBe(0);
+    }));
+
+  it("should refuse a link that is not valid", () =>
+    withClean(async (db) => {
+      expect(
+        await addResourceForMcp(db, userA, { url: "not a link" }, lookup),
+      ).toEqual({ kind: "invalid_url" });
+    }));
+
+  it("should use the link lookup limit", () =>
+    withClean(async (db) => {
+      await db
+        .insert(rateLimits)
+        .values({ userId: userA, action: "link_lookup", count: 30 })
+        .onConflictDoUpdate({
+          target: [rateLimits.userId, rateLimits.action],
+          set: { count: 30, windowStartedAt: new Date() },
+        });
+
+      expect(
+        await addResourceForMcp(db, userA, { url: url() }, lookup),
+      ).toEqual({ kind: "rate_limited" });
+    }));
+
+  it("should not treat another user's link as a duplicate", () =>
+    withClean(async (db) => {
+      const link = url();
+      await addResourceForMcp(db, userB, { url: link }, lookup);
+
+      const result = await addResourceForMcp(db, userA, { url: link }, lookup);
+
+      expect(result.kind).toBe("created");
     }));
 });

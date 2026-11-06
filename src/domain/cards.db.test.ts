@@ -3,9 +3,14 @@ import { describe, expect, it } from "vitest";
 import { cardSchedules, cards, reviews } from "@/lib/db/schema";
 import { SEEDED_USERS, withTestDb } from "@/lib/db/test-db";
 import type { Db } from "@/lib/db/types";
-import { MAX_CARD_SIDE_BYTES, MAX_CARDS_PER_USER } from "./card-limits";
+import {
+  MAX_CARD_SIDE_BYTES,
+  MAX_CARDS_PER_CALL,
+  MAX_CARDS_PER_USER,
+} from "./card-limits";
 import {
   createCard,
+  createPendingCards,
   deleteCard,
   getCard,
   listCards,
@@ -14,6 +19,7 @@ import {
   updateCard,
 } from "./cards";
 import { createResource, deleteResource } from "./resources";
+import { selectReviewCards } from "./review-selection";
 
 const { a: userA, b: userB } = SEEDED_USERS;
 const sides = { front: "Question", back: "Answer" };
@@ -459,5 +465,110 @@ describe("deleting cards", () => {
   it("should return null when the id is not valid", () =>
     withTestDb(async (db) => {
       expect(await deleteCard(db, userA, "nope")).toBeNull();
+    }));
+});
+
+describe("creating pending cards", () => {
+  it("should create pending mcp cards with no schedule", () =>
+    withTestDb(async (db) => {
+      const resourceId = await addResource(db, userA);
+
+      const result = await createPendingCards(db, userA, {
+        resourceId,
+        cards: [sides],
+      });
+      if (result?.kind !== "created") throw new Error("Cards not created");
+
+      const [card] = await db
+        .select({ status: cards.status, source: cards.source })
+        .from(cards)
+        .where(eq(cards.id, result.ids[0]));
+      expect(card).toEqual({ status: "pending", source: "mcp" });
+      expect(
+        await db
+          .select({ cardId: cardSchedules.cardId })
+          .from(cardSchedules)
+          .where(eq(cardSchedules.cardId, result.ids[0])),
+      ).toEqual([]);
+    }));
+
+  it("should allow a card with no resource", () =>
+    withTestDb(async (db) => {
+      const result = await createPendingCards(db, userA, { cards: [sides] });
+
+      expect(result?.kind).toBe("created");
+    }));
+
+  it("should keep pending cards out of review sessions", () =>
+    withTestDb(async (db) => {
+      const result = await createPendingCards(db, userA, { cards: [sides] });
+      if (result?.kind !== "created") throw new Error("Cards not created");
+
+      const session = await selectReviewCards(db, userA, new Date());
+
+      expect(session.cards.map((card) => card.id)).not.toContain(result.ids[0]);
+    }));
+
+  it("should refuse more cards than one call allows", () =>
+    withTestDb(async (db) => {
+      const result = await createPendingCards(db, userA, {
+        cards: Array.from({ length: MAX_CARDS_PER_CALL + 1 }, () => sides),
+      });
+
+      expect(result).toEqual({ kind: "invalid_count" });
+    }));
+
+  it("should refuse an empty list", () =>
+    withTestDb(async (db) => {
+      expect(await createPendingCards(db, userA, { cards: [] })).toEqual({
+        kind: "invalid_count",
+      });
+    }));
+
+  it("should save nothing and name the card when one is wrong", () =>
+    withTestDb(async (db) => {
+      const resourceId = await addResource(db, userA);
+
+      const result = await createPendingCards(db, userA, {
+        resourceId,
+        cards: [sides, { front: "", back: "A" }],
+      });
+
+      expect(result).toEqual({
+        kind: "invalid",
+        cards: [{ index: 1, errors: { front: "empty", back: null } }],
+      });
+      expect(await listResourceCards(db, userA, resourceId)).toEqual([]);
+    }));
+
+  it(
+    "should stop at the account limit",
+    () =>
+      withTestDb(async (db) => {
+        await db.delete(cards).where(eq(cards.userId, userA));
+        await db.insert(cards).values(
+          Array.from({ length: MAX_CARDS_PER_USER - 1 }, () => ({
+            userId: userA,
+            ...sides,
+          })),
+        );
+
+        const result = await createPendingCards(db, userA, {
+          cards: [sides, sides],
+        });
+
+        expect(result).toEqual({ kind: "limit_reached" });
+      }),
+    30_000,
+  );
+
+  it("should not add cards to another user's resource", () =>
+    withTestDb(async (db) => {
+      const resourceId = await addResource(db, userB);
+
+      expect(
+        await createPendingCards(db, userA, { resourceId, cards: [sides] }),
+      ).toBeNull();
+      expect(await listResourceCards(db, userB, resourceId)).toEqual([]);
     }));
 });

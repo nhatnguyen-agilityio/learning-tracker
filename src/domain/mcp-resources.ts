@@ -1,10 +1,25 @@
 import { and, asc, eq, isNull } from "drizzle-orm";
 import { cards } from "@/lib/db/schema";
 import type { Db } from "@/lib/db/types";
+import { normalizeUrl } from "./normalize-url";
 import { listNotes } from "./notes";
-import { getResource } from "./resources";
+import { checkRateLimit, LINK_LOOKUP_LIMIT } from "./rate-limit";
+import type { ResourceStatus } from "./resource-status";
+import {
+  createResource,
+  findResourceByUrl,
+  getResource,
+  MAX_TITLE_LENGTH,
+  MAX_URL_LENGTH,
+} from "./resources";
 import { type ResourceFilters, searchResources } from "./search-resources";
-import { listResourceTopics, listTopics } from "./topics";
+import {
+  createTopic,
+  listResourceTopics,
+  listTopics,
+  nextTopicColor,
+  setResourceTopics,
+} from "./topics";
 
 export const MAX_SEARCH_RESULTS = 50;
 
@@ -81,4 +96,78 @@ export async function getResourceForMcp(
     notes: notes.map(({ id, contentMd }) => ({ id, content: contentMd })),
     cards: resourceCards,
   };
+}
+
+type LinkDetails = {
+  title: string | null;
+  thumbnailUrl: string | null;
+  type: "article" | "video" | "course" | "doc" | "other";
+};
+
+/**
+ * Follows the same rules as adding a link in the app. `lookup` reads the page;
+ * it is passed in because the domain layer makes no network calls.
+ */
+export async function addResourceForMcp(
+  db: Db,
+  userId: string,
+  input: { url: string; topics?: string[]; status?: ResourceStatus },
+  lookup: (url: string) => Promise<LinkDetails>,
+) {
+  if (input.url.length > MAX_URL_LENGTH || !normalizeUrl(input.url)) {
+    return { kind: "invalid_url" } as const;
+  }
+
+  const existing = await findResourceByUrl(db, userId, input.url);
+  if (existing) {
+    return {
+      kind: "duplicate",
+      resource: { id: existing.id, title: existing.title },
+    } as const;
+  }
+
+  const allowed = await checkRateLimit(
+    db,
+    userId,
+    "link_lookup",
+    LINK_LOOKUP_LIMIT,
+  );
+  if (!allowed) return { kind: "rate_limited" } as const;
+
+  const details = await lookup(input.url);
+  const result = await createResource(db, userId, {
+    url: input.url,
+    title: details.title ?? input.url.slice(0, MAX_TITLE_LENGTH),
+    type: details.type,
+    thumbnailUrl: details.thumbnailUrl,
+    status: input.status,
+  });
+  if (result.kind !== "created") {
+    return result.kind === "duplicate"
+      ? ({
+          kind: "duplicate",
+          resource: { id: result.resource.id, title: result.resource.title },
+        } as const)
+      : ({ kind: result.kind } as const);
+  }
+
+  const topicIds: string[] = [];
+  const known = await listTopics(db, userId);
+  for (const [index, name] of (input.topics ?? []).entries()) {
+    const topic = await createTopic(db, userId, {
+      name,
+      color: nextTopicColor(known.length + index),
+    });
+    if (topic.kind === "created" || topic.kind === "duplicate") {
+      topicIds.push(topic.topic.id);
+    }
+  }
+  if (topicIds.length > 0) {
+    await setResourceTopics(db, userId, result.resource.id, topicIds);
+  }
+
+  return {
+    kind: "created",
+    resource: { id: result.resource.id, title: result.resource.title },
+  } as const;
 }
