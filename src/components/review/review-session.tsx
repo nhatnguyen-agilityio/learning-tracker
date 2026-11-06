@@ -8,7 +8,9 @@ import {
   useRef,
   useState,
   useSyncExternalStore,
+  useTransition,
 } from "react";
+import { loadReviewBatch } from "@/app/review/actions";
 import { Button } from "@/components/ui/button";
 import type { ReviewRating } from "@/domain/fsrs";
 import {
@@ -22,10 +24,13 @@ import {
   currentItem,
   dropCards,
   rateCurrent,
+  startNextBatch,
   startSession,
+  summarize,
   undoLast,
 } from "@/lib/review-session/session";
 import { ReviewCard, type ReviewCardData } from "./review-card";
+import { ReviewSummary } from "./review-summary";
 
 const RATINGS = [
   {
@@ -98,13 +103,18 @@ function Kbd({ children }: { children: string }) {
 
 export function ReviewSession({
   cards,
+  initialRemaining,
   userId,
 }: {
   cards: ReviewCardData[];
+  initialRemaining: number;
   userId: string;
 }) {
   const t = useTranslations("review");
   const [session, setSession] = useState(() => startSession(cards));
+  const [remaining, setRemaining] = useState(initialRemaining);
+  const [batchFailed, setBatchFailed] = useState(false);
+  const [loadingBatch, startLoadingBatch] = useTransition();
   const [flipped, setFlipped] = useState(false);
   const [undoFailed, setUndoFailed] = useState(false);
   const [queueState, setQueueState] = useState<{
@@ -151,6 +161,21 @@ export function ReviewSession({
   const item = currentItem(session);
   const card = item?.card;
   const left = cardsLeft(session);
+  const summary = summarize(session);
+
+  function keepReviewing() {
+    setBatchFailed(false);
+    startLoadingBatch(async () => {
+      const batch = await loadReviewBatch().catch(() => null);
+      if (!batch) {
+        setBatchFailed(true);
+        return;
+      }
+      setRemaining(batch.remaining);
+      setSession((state) => startNextBatch(state, batch.cards));
+      setFlipped(false);
+    });
+  }
 
   function rate(rating: ReviewRating) {
     if (!card) return;
@@ -296,6 +321,15 @@ export function ReviewSession({
             <Kbd>3</Kbd> {t("keyRate")} <Kbd>Z</Kbd> {t("undo")}
           </p>
         </div>
+      ) : summary.reviewed > 0 ? (
+        <ReviewSummary
+          summary={summary}
+          remaining={remaining}
+          pending={queueState.pending}
+          loading={loadingBatch}
+          loadFailed={batchFailed}
+          onContinue={keepReviewing}
+        />
       ) : (
         <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
           <p className="text-lg font-semibold">{t("noneLeft")}</p>

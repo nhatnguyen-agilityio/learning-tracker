@@ -205,6 +205,16 @@
     "signedOut": "Your session has ended. Sign in again and your ratings will be sent.",
     "undo": "Undo",
     "again": "Review again",
-    "undoFailed": "Could not undo that rating."
+    "undoFailed": "Could not undo that rating.",
+    "batchTitle": "Batch complete",
+    "batchBody": "{count, plural, one {# card is still due.} other {# cards are still due.}}",
+    "doneTitle": "Session complete",
+    "doneBody": "You reviewed every card due today.",
+    "statCards": "cards reviewed",
+    "statRate": "recall rate",
+    "statStreak": "day streak",
+    "rateNote": "Recall rate counts the first rating of each card.",
+    "keepReviewing": "Keep reviewing",
+    "batchFailed": "Could not load more cards. Try again."
   }
 }

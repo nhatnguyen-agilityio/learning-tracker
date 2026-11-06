@@ -60,7 +60,9 @@ test("should review a small batch with the keyboard", async ({ page }) => {
   await flip(page);
   await page.keyboard.press("2");
 
-  await expect(page.getByText("No cards left for now.")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Session complete" }),
+  ).toBeVisible();
 });
 
 test("should not rate with a number before flipping", async ({ page }) => {
@@ -86,7 +88,9 @@ test("should flip and rate by tapping", async ({ page }) => {
   await page.getByRole("button", { name: "Show answer" }).first().click();
   await rating(page, "Vaguely").click();
 
-  await expect(page.getByText("No cards left for now.")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Session complete" }),
+  ).toBeVisible();
 });
 
 test("should show the help line after flipping", async ({ page }) => {

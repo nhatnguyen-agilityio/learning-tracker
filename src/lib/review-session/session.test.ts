@@ -4,7 +4,9 @@ import {
   currentItem,
   dropCards,
   rateCurrent,
+  startNextBatch,
   startSession,
+  summarize,
   undoLast,
 } from "./session";
 
@@ -97,5 +99,78 @@ describe("dropping cards", () => {
 
     expect(currentItem(state)?.card.id).toBe("b");
     expect(cardsLeft(state)).toBe(1);
+  });
+});
+
+describe("summarizing", () => {
+  const three = [{ id: "a" }, { id: "b" }, { id: "c" }];
+
+  it("should give zeros before any rating", () => {
+    expect(summarize(startSession(cards))).toEqual({
+      reviewed: 0,
+      remembered: 0,
+      vaguely: 0,
+      forgot: 0,
+      recallRate: 0,
+    });
+  });
+
+  it("should count remembered and vaguely as recalled", () => {
+    let state = startSession(three);
+    state = rateCurrent(state, "remembered", "k1");
+    state = rateCurrent(state, "vaguely", "k2");
+    state = rateCurrent(state, "forgot", "k3");
+
+    expect(summarize(state)).toEqual({
+      reviewed: 3,
+      remembered: 1,
+      vaguely: 1,
+      forgot: 1,
+      recallRate: 67,
+    });
+  });
+
+  it("should use only the first rating of a card", () => {
+    let state = startSession([{ id: "a" }]);
+    state = rateCurrent(state, "forgot", "k1");
+    state = rateCurrent(state, "remembered", "k2");
+
+    expect(summarize(state)).toMatchObject({
+      reviewed: 1,
+      forgot: 1,
+      remembered: 0,
+      recallRate: 0,
+    });
+  });
+
+  it("should forget a first rating that was undone", () => {
+    let state = startSession(cards);
+    state = rateCurrent(state, "forgot", "k1");
+    state = undoLast(state);
+    state = rateCurrent(state, "remembered", "k2");
+
+    expect(summarize(state)).toMatchObject({ forgot: 0, remembered: 1 });
+  });
+
+  it("should keep the first rating when a later one is undone", () => {
+    let state = startSession([{ id: "a" }]);
+    state = rateCurrent(state, "forgot", "k1");
+    state = rateCurrent(state, "remembered", "k2");
+    state = undoLast(state);
+
+    expect(summarize(state)).toMatchObject({ reviewed: 1, forgot: 1 });
+  });
+
+  it("should keep results across batches", () => {
+    let state = rateCurrent(startSession(cards), "remembered", "k1");
+    state = startNextBatch(state, [{ id: "a" }, { id: "c" }]);
+    state = rateCurrent(state, "forgot", "k2");
+    state = rateCurrent(state, "forgot", "k3");
+
+    expect(summarize(state)).toMatchObject({
+      reviewed: 2,
+      remembered: 1,
+      forgot: 1,
+    });
   });
 });

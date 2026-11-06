@@ -60,7 +60,9 @@ test("should save a rating once after a network error", async ({ page }) => {
   await flip(page);
   await page.keyboard.press("3");
 
-  await expect(page.getByText("No cards left for now.")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Session complete" }),
+  ).toBeVisible();
   await expect(page.getByText(/Sending 1 rating/)).toBeVisible();
   expect(await countReviews(front)).toBe(0);
 

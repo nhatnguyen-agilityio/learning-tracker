@@ -83,7 +83,9 @@ test("should meet a forgotten card at the end of the session", async ({
   await flip(page);
   await page.keyboard.press("3");
 
-  await expect(page.getByText("No cards left for now.")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Session complete" }),
+  ).toBeVisible();
   await expect.poll(() => countReviews(first)).toBe(2);
 });
 
@@ -121,7 +123,9 @@ test("should undo with the button on a phone", async ({ page }) => {
 
   await flip(page);
   await remembered(page).click();
-  await expect(page.getByText("No cards left for now.")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Session complete" }),
+  ).toBeVisible();
   // The dev server's floating badge covers this corner at 375 px.
   await undoButton(page).dispatchEvent("click");
 

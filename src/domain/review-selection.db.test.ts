@@ -324,6 +324,52 @@ describe("backlog", () => {
     }));
 });
 
+describe("cards left for the next batch", () => {
+  it("should be 0 when the batch takes everything", () =>
+    withCleanUser(async (db) => {
+      await addDue(db, 3);
+      await addCards(db, 2);
+
+      expect((await selectReviewCards(db, userA, now)).remaining).toBe(0);
+    }));
+
+  it("should count due cards past the batch", () =>
+    withCleanUser(async (db) => {
+      await addDue(db, REVIEW_BATCH_SIZE + 7);
+
+      expect((await selectReviewCards(db, userA, now)).remaining).toBe(7);
+    }));
+
+  it("should count new cards the batch had no room for", () =>
+    withCleanUser(
+      async (db) => {
+        await addDue(db, REVIEW_BATCH_SIZE - 1);
+        await addCards(db, 4);
+
+        expect((await selectReviewCards(db, userA, now)).remaining).toBe(3);
+      },
+      { newCardsPerDay: 10 },
+    ));
+
+  it("should not count new cards over the daily limit", () =>
+    withCleanUser(
+      async (db) => {
+        await addCards(db, 5);
+
+        expect((await selectReviewCards(db, userA, now)).remaining).toBe(0);
+      },
+      { newCardsPerDay: 2 },
+    ));
+
+  it("should not count new cards during a backlog", () =>
+    withCleanUser(async (db) => {
+      await addDue(db, REVIEW_BATCH_SIZE + 1);
+      await addCards(db, 4);
+
+      expect((await selectReviewCards(db, userA, now)).remaining).toBe(1);
+    }));
+});
+
 describe("cards left out of a session", () => {
   it.each(["suspended", "pending"] as const)(
     "should skip a %s card",
