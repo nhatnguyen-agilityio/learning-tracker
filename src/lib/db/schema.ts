@@ -250,3 +250,16 @@ export const apiTokens = pgTable(
   },
   (table) => [index("api_tokens_user_id_idx").on(table.userId)],
 ).enableRLS();
+
+export const rateLimits = pgTable(
+  "rate_limits",
+  {
+    userId: userId(),
+    action: text("action").notNull(),
+    count: integer("count").notNull().default(1),
+    windowStartedAt: timestamp("window_started_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.action] })],
+).enableRLS();

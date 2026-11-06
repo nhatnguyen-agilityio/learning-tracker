@@ -21,12 +21,13 @@ const references = (table: PgTable) =>
   });
 
 describe("database schema", () => {
-  it("should define the 9 tables when reading the schema", () => {
+  it("should define the 10 tables when reading the schema", () => {
     expect(namedTables.map(([name]) => name).sort()).toEqual([
       "api_tokens",
       "card_schedules",
       "cards",
       "notes",
+      "rate_limits",
       "resource_topics",
       "resources",
       "reviews",

@@ -68,7 +68,8 @@
     "cancel": "Cancel",
     "save": "Save source",
     "saving": "Saving",
-    "saveError": "Could not save this source. Your input is still here."
+    "saveError": "Could not save this source. Your input is still here.",
+    "rateLimited": "You're adding links too fast. Please wait a minute and try again."
   },
   "library": {
     "emptyTitle": "Your library is empty",

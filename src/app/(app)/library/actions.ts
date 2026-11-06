@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { normalizeUrl } from "@/domain/normalize-url";
+import { checkRateLimit, LINK_LOOKUP_LIMIT } from "@/domain/rate-limit";
 import {
   createResource,
   findResourceByUrl,
@@ -27,6 +28,7 @@ type ResourceStatus = (typeof resources.status.enumValues)[number];
 
 export type LookupResult =
   | { kind: "invalid" }
+  | { kind: "rate_limited" }
   | { kind: "duplicate"; resource: { id: string; title: string } }
   | { kind: "metadata"; metadata: LinkMetadata };
 
@@ -36,13 +38,22 @@ export async function lookupLink(url: string): Promise<LookupResult> {
     return { kind: "invalid" };
   }
 
-  const existing = await findResourceByUrl(getDb(), userId, url);
+  const db = getDb();
+  const existing = await findResourceByUrl(db, userId, url);
   if (existing) {
     return {
       kind: "duplicate",
       resource: { id: existing.id, title: existing.title },
     };
   }
+
+  const allowed = await checkRateLimit(
+    db,
+    userId,
+    "link_lookup",
+    LINK_LOOKUP_LIMIT,
+  );
+  if (!allowed) return { kind: "rate_limited" };
 
   return { kind: "metadata", metadata: await fetchMetadata(url) };
 }
