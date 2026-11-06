@@ -17,7 +17,8 @@
     "db:stop": "supabase stop",
     "db:status": "supabase status",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "supabase migration up"
+    "db:migrate": "supabase migration up",
+    "db:migrate:prod": "bash scripts/migrate-prod.sh"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",

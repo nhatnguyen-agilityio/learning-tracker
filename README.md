@@ -71,4 +71,32 @@ CI runs these tests too: the workflow starts Supabase's Postgres with `pnpm exec
 
 Don't edit a migration once it is merged; the next change is a new migration.
 
+### Migrating production
+
+Run this by hand before merging code into `main`. A hook stops Claude from running it. Docker must be running.
+
+```bash
+read -rs PROD_DATABASE_URL && export PROD_DATABASE_URL
+pnpm db:migrate:prod
+```
+
+Paste the connection string from Supabase at the prompt, so it stays out of your shell history. If the direct connection fails, use the session pooler string.
+
+The command shows the database and the migrations it will apply, then asks you to type `migrate`. It backs up the `public`, `auth` and `supabase_migrations` schemas to `backups/`, which git ignores, and only then migrates. If `pg_dump` fails or the backup can't be read, it stops and changes nothing. The backups hold real user data, so keep them on your machine and delete old ones.
+
+`pg_dump` must not be older than the server, so it runs in the `postgres:17` image. If the server moves to a new major version, set `PG_IMAGE`. `PG_DUMP_URL` is only for a local test database, which needs a different address from inside Docker.
+
+**Each migration must work with the code that is already running**, because the migration runs before the new code deploys:
+
+- Adding a table, or a column that is nullable or has a default, takes 1 release.
+- Removing or renaming a column takes 2 releases: first ship code that stops using it, then remove it in the next release.
+
+To restore a backup into a local or throwaway database:
+
+```bash
+docker run --rm -i postgres:17 pg_restore --clean --if-exists --no-owner --no-privileges --dbname="$RESTORE_DATABASE_URL" < backups/<file>.dump
+```
+
+The restore was tried on a throwaway Supabase Postgres as `supabase_admin`, a role Supabase Cloud doesn't give you. Try it on a copy before relying on it for Cloud.
+
 The `analytics` container is off in `supabase/config.toml`, because it did not start locally and the app doesn't use it.
