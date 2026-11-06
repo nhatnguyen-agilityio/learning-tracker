@@ -42,7 +42,21 @@
     "signOut": "Sign out",
     "errorTitle": "Could not load settings",
     "errorBody": "Check your connection and try again.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "topics": "Topics",
+    "noTopics": "No topics yet.",
+    "topicName": "Topic name",
+    "topicColor": "Topic color",
+    "topicColorOption": "Color {number}",
+    "topicDuplicate": "This topic already exists.",
+    "topicInvalidName": "Enter a name of up to 50 characters.",
+    "topicDeleteTitle": "Delete this topic?",
+    "topicDeleteBody": "{count, plural, =0 {No sources use this topic.} one {# source uses this topic and will stay in your library.} other {# sources use this topic and will stay in your library.}}",
+    "topicDeleteAction": "Delete topic",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "save": "Save"
   },
   "resourceForm": {
     "add": "Add a source",

@@ -1,4 +1,6 @@
+import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
+import { topics } from "@/lib/db/schema";
 import { SEEDED_USERS, withTestDb } from "@/lib/db/test-db";
 import type { Db } from "@/lib/db/types";
 import { createResource, getResource } from "./resources";
@@ -6,9 +8,10 @@ import { searchResources } from "./search-resources";
 import {
   createTopic,
   deleteTopic,
-  listUsedTopics,
   listResourceTopics,
   listTopics,
+  listTopicsWithUsage,
+  listUsedTopics,
   MAX_TOPIC_NAME_LENGTH,
   nextTopicColor,
   setResourceTopics,
@@ -303,5 +306,47 @@ describe("listing used topics", () => {
       const rows = await listUsedTopics(db, userA);
 
       expect(rows.map((topic) => topic.name)).not.toContain(name);
+    }));
+});
+
+describe("listing topics with usage", () => {
+  it("should count the resources of each topic", () =>
+    withTestDb(async (db) => {
+      await db.delete(topics).where(eq(topics.userId, userA));
+      const used = await addTopic(db, userA, "Used");
+      await addTopic(db, userA, "Unused");
+      const resourceId = await addResource(db, userA);
+      await setResourceTopics(db, userA, resourceId, [used]);
+
+      const rows = await listTopicsWithUsage(db, userA);
+
+      expect(
+        rows.map(({ name, resourceCount }) => ({ name, resourceCount })),
+      ).toEqual([
+        { name: "Unused", resourceCount: 0 },
+        { name: "Used", resourceCount: 1 },
+      ]);
+    }));
+
+  it("should not list another user's topics", () =>
+    withTestDb(async (db) => {
+      const name = `Private ${crypto.randomUUID()}`;
+      await createTopic(db, userB, { name, color: "topic-1" });
+
+      const rows = await listTopicsWithUsage(db, userA);
+
+      expect(rows.map((row) => row.name)).not.toContain(name);
+    }));
+});
+
+describe("malformed topic ids", () => {
+  it("should return null when updating", () =>
+    withTestDb(async (db) => {
+      expect(await updateTopic(db, userA, "nope", { name: "X" })).toBeNull();
+    }));
+
+  it("should return false when deleting", () =>
+    withTestDb(async (db) => {
+      expect(await deleteTopic(db, userA, "nope")).toBe(false);
     }));
 });

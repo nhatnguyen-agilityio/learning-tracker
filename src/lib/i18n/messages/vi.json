@@ -42,7 +42,21 @@
     "signOut": "Đăng xuất",
     "errorTitle": "Không tải được cài đặt",
     "errorBody": "Kiểm tra kết nối rồi thử lại.",
-    "retry": "Thử lại"
+    "retry": "Thử lại",
+    "topics": "Chủ đề",
+    "noTopics": "Chưa có chủ đề nào.",
+    "topicName": "Tên chủ đề",
+    "topicColor": "Màu chủ đề",
+    "topicColorOption": "Màu {number}",
+    "topicDuplicate": "Chủ đề này đã có.",
+    "topicInvalidName": "Nhập tên dài tối đa 50 ký tự.",
+    "topicDeleteTitle": "Xoá chủ đề này?",
+    "topicDeleteBody": "{count, plural, =0 {Chưa có nguồn nào dùng chủ đề này.} other {# nguồn đang dùng chủ đề này và vẫn được giữ trong Library.}}",
+    "topicDeleteAction": "Xoá chủ đề",
+    "edit": "Sửa",
+    "delete": "Xoá",
+    "cancel": "Huỷ",
+    "save": "Lưu"
   },
   "resourceForm": {
     "add": "Thêm nguồn",
