@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
 import { supabaseEnv } from "@/lib/auth/env";
-import { isPublicPath, SIGN_IN_PATH } from "@/lib/auth/routes";
+import { isApiPath, isPublicPath, SIGN_IN_PATH } from "@/lib/auth/routes";
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -29,7 +29,7 @@ export async function proxy(request: NextRequest) {
   const { data } = await supabase.auth.getClaims();
   const { pathname, search } = request.nextUrl;
 
-  if (!data?.claims && !isPublicPath(pathname)) {
+  if (!data?.claims && !isPublicPath(pathname) && !isApiPath(pathname)) {
     const signIn = request.nextUrl.clone();
     signIn.pathname = SIGN_IN_PATH;
     signIn.search = "";

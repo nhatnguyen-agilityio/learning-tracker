@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isPublicPath, safeNextPath } from "./routes";
+import { isApiPath, isPublicPath, safeNextPath } from "./routes";
 
 describe("isPublicPath", () => {
   it.each([
@@ -18,6 +18,16 @@ describe("isPublicPath", () => {
       expect(isPublicPath(path)).toBe(false);
     },
   );
+});
+
+describe("isApiPath", () => {
+  it("should match a path under /api", () => {
+    expect(isApiPath("/api/reviews")).toBe(true);
+  });
+
+  it.each(["/api", "/apiary", "/library"])("should not match %s", (path) => {
+    expect(isApiPath(path)).toBe(false);
+  });
 });
 
 describe("safeNextPath", () => {
