@@ -86,7 +86,6 @@
   "resourceDetail": {
     "openLink": "Mở link gốc",
     "edit": "Sửa",
-    "progress": "Tiến độ",
     "cards": "Thẻ",
     "notFound": "Không tìm thấy nguồn này",
     "backToLibrary": "Về Library",
@@ -114,5 +113,15 @@
     "failed": "Không lưu được. Nội dung của bạn vẫn còn đây.",
     "tooLarge": "Ghi chú vượt giới hạn 100 KB. Hãy rút gọn để lưu.",
     "size": "{used} trên {max} KB"
+  },
+  "progress": {
+    "label": "Tiến độ",
+    "status": "Trạng thái",
+    "saving": "Đang lưu",
+    "saved": "Đã lưu",
+    "failed": "Chưa lưu được tiến độ",
+    "suggestDone": "Đã đạt 100%. Chuyển nguồn này sang Xong?",
+    "markDone": "Chuyển sang Xong",
+    "notNow": "Để sau"
   }
 }

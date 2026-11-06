@@ -2,6 +2,11 @@ import { and, count, desc, eq } from "drizzle-orm";
 import { resources } from "@/lib/db/schema";
 import type { Db } from "@/lib/db/types";
 import { normalizeUrl } from "./normalize-url";
+import {
+  isResourceStatus,
+  isValidProgress,
+  statusAfterProgress,
+} from "./resource-status";
 import { isUuid } from "./uuid";
 
 export const MAX_RESOURCES_PER_USER = 2000;
@@ -157,6 +162,54 @@ export async function updateResource(
       type: changes.type,
       thumbnailUrl: storableThumbnail(changes.thumbnailUrl),
     })
+    .where(and(eq(resources.userId, userId), eq(resources.id, resourceId)))
+    .returning(resourceFields);
+  return resource ? ({ kind: "updated", resource } as const) : null;
+}
+
+/** Returns null for another user's resource, the same as for a missing one. */
+export function setResourceProgress(
+  db: Db,
+  userId: string,
+  resourceId: string,
+  progress: number,
+) {
+  if (!isValidProgress(progress)) {
+    return Promise.resolve({ kind: "invalid_progress" } as const);
+  }
+  if (!isUuid(resourceId)) return Promise.resolve(null);
+
+  const owned = and(eq(resources.userId, userId), eq(resources.id, resourceId));
+  return db.transaction(async (tx) => {
+    const [current] = await tx
+      .select({ status: resources.status })
+      .from(resources)
+      .where(owned)
+      .for("update");
+    if (!current) return null;
+
+    const [resource] = await tx
+      .update(resources)
+      .set({ progress, status: statusAfterProgress(current.status, progress) })
+      .where(owned)
+      .returning(resourceFields);
+    return { kind: "updated", resource } as const;
+  });
+}
+
+/** Changing the status never changes the percentage (SPEC.md, F3). */
+export async function setResourceStatus(
+  db: Db,
+  userId: string,
+  resourceId: string,
+  status: string,
+) {
+  if (!isResourceStatus(status)) return { kind: "invalid_status" } as const;
+  if (!isUuid(resourceId)) return null;
+
+  const [resource] = await db
+    .update(resources)
+    .set({ status })
     .where(and(eq(resources.userId, userId), eq(resources.id, resourceId)))
     .returning(resourceFields);
   return resource ? ({ kind: "updated", resource } as const) : null;

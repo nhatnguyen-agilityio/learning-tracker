@@ -27,11 +27,11 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RESOURCE_STATUSES } from "@/domain/resource-status";
 import { ResourceThumbnail } from "./resource-thumbnail";
 import { type TopicOption, TopicPicker } from "./topic-picker";
 
 const RESOURCE_TYPES = ["article", "video", "course", "doc", "other"] as const;
-const RESOURCE_STATUSES = ["want", "learning", "done"] as const;
 
 type Step = "link" | "fetching" | "duplicate" | "details";
 

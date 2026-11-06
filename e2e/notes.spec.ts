@@ -7,7 +7,9 @@ const editor = (page: Page) => page.getByRole("textbox", { name: "Note" });
 async function addNote(page: Page, text: string) {
   await page.getByRole("button", { name: "Add a note" }).click();
   await editor(page).fill(text);
-  await expect(page.getByRole("status")).toHaveText("Saved");
+  await expect(page.getByRole("article").getByRole("status")).toHaveText(
+    "Saved",
+  );
 }
 
 test.beforeEach(async ({ page }) => {
@@ -23,7 +25,9 @@ test.beforeEach(async ({ page }) => {
 test("should show the saved state after typing", async ({ page }) => {
   await addNote(page, "Remember this");
 
-  await expect(page.getByRole("status")).toHaveText("Saved");
+  await expect(page.getByRole("article").getByRole("status")).toHaveText(
+    "Saved",
+  );
 });
 
 test("should keep a note after reloading", async ({ page }) => {
@@ -41,7 +45,9 @@ test("should keep each note separate", async ({ page }) => {
   await page.getByRole("button", { name: "Add a note" }).click();
   await expect(editor(page)).toHaveCount(2);
   await editor(page).last().fill("Second note");
-  await expect(page.getByRole("status").last()).toHaveText("Saved");
+  await expect(page.getByRole("article").getByRole("status").last()).toHaveText(
+    "Saved",
+  );
 
   await page.reload();
 
