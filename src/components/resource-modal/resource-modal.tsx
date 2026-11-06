@@ -126,7 +126,9 @@ function ResourceForm({
   const [step, setStep] = useState<Step>(resource ? "details" : "link");
   const [url, setUrl] = useState(resource?.url ?? "");
   const [checkedUrl, setCheckedUrl] = useState("");
-  const [urlError, setUrlError] = useState(false);
+  const [urlError, setUrlError] = useState<"linkError" | "rateLimited" | null>(
+    null,
+  );
   const [duplicate, setDuplicate] = useState<{
     id: string;
     title: string;
@@ -157,13 +159,14 @@ function ResourceForm({
     if (!link || link === checkedUrl) return;
 
     setCheckedUrl(link);
-    setUrlError(false);
+    setUrlError(null);
     setDuplicate(null);
     setStep("fetching");
 
     const result = await lookupLink(link);
-    if (result.kind === "invalid") {
-      setUrlError(true);
+    if (result.kind === "invalid" || result.kind === "rate_limited") {
+      setUrlError(result.kind === "invalid" ? "linkError" : "rateLimited");
+      setCheckedUrl("");
       setStep("link");
     } else if (result.kind === "duplicate") {
       setDuplicate(result.resource);
@@ -216,7 +219,7 @@ function ResourceForm({
             placeholder="https://"
             value={url}
             disabled={Boolean(resource) || step === "fetching"}
-            aria-invalid={urlError}
+            aria-invalid={urlError !== null}
             onChange={(event) => setUrl(event.target.value)}
             onBlur={checkLink}
             onKeyDown={(event) => {
@@ -240,7 +243,7 @@ function ResourceForm({
           }
         >
           {urlError
-            ? t("linkError")
+            ? t(urlError)
             : step === "fetching"
               ? t("fetching")
               : t("linkHint")}

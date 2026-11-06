@@ -68,7 +68,8 @@
     "cancel": "Huỷ",
     "save": "Lưu nguồn",
     "saving": "Đang lưu",
-    "saveError": "Không lưu được nguồn. Nội dung bạn nhập vẫn còn đây."
+    "saveError": "Không lưu được nguồn. Nội dung bạn nhập vẫn còn đây.",
+    "rateLimited": "Bạn đang thêm link hơi nhanh. Đợi một phút rồi thử lại nhé."
   },
   "library": {
     "emptyTitle": "Thư viện còn trống",

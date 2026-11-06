@@ -29,6 +29,13 @@
       "when": 1793932186100,
       "tag": "20261106022946_search_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793932695110,
+      "tag": "20261106023815_add_rate_limits",
+      "breakpoints": true
     }
   ]
 }
