@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { NotesSection } from "@/components/notes/notes-section";
 import { ResourceModal } from "@/components/resource-modal/resource-modal";
 import { ResourceThumbnail } from "@/components/resource-modal/resource-thumbnail";
+import { ResourceProgress } from "@/components/resource-progress";
 import { TopicDot } from "@/components/topic-dot";
 import { Button } from "@/components/ui/button";
 import { listNotes } from "@/domain/notes";
@@ -77,9 +78,11 @@ export default async function ResourceDetail({
           triggerVariant="secondary"
         />
       </div>
-      <section className="rounded-lg border border-border bg-card p-4">
-        <h2 className="font-semibold">{t("progress")}</h2>
-      </section>
+      <ResourceProgress
+        resourceId={id}
+        initialProgress={resource.progress}
+        initialStatus={resource.status}
+      />
       <NotesSection resourceId={id} initialNotes={notes} />
       <section className="rounded-lg border border-border bg-card p-4">
         <h2 className="font-semibold">{t("cards")}</h2>

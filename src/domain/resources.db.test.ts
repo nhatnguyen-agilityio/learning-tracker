@@ -11,6 +11,8 @@ import {
   MAX_RESOURCES_PER_USER,
   MAX_TITLE_LENGTH,
   MAX_URL_LENGTH,
+  setResourceProgress,
+  setResourceStatus,
   updateResource,
 } from "./resources";
 
@@ -354,6 +356,91 @@ describe("updating resources", () => {
       ).toBeNull();
       expect(await getResource(db, userB, otherId)).toMatchObject({
         title: "from-b",
+      });
+    }));
+});
+
+describe("setting progress", () => {
+  it("should move a wanted resource to learning when progress goes above 0", () =>
+    withTestDb(async (db) => {
+      const id = await addResource(db, userA, "progress");
+
+      const result = await setResourceProgress(db, userA, id, 25);
+
+      expect(result).toMatchObject({
+        kind: "updated",
+        resource: { progress: 25, status: "learning" },
+      });
+    }));
+
+  it("should keep done when progress goes down", () =>
+    withTestDb(async (db) => {
+      const id = await addResource(db, userA, "done");
+      await setResourceStatus(db, userA, id, "done");
+
+      const result = await setResourceProgress(db, userA, id, 10);
+
+      expect(result).toMatchObject({
+        resource: { progress: 10, status: "done" },
+      });
+    }));
+
+  it.each([-5, 101, 12.5])("should refuse %d", (progress) =>
+    withTestDb(async (db) => {
+      const id = await addResource(db, userA, "invalid");
+
+      expect(await setResourceProgress(db, userA, id, progress)).toEqual({
+        kind: "invalid_progress",
+      });
+    }),
+  );
+
+  it("should not change another user's resource", () =>
+    withTestDb(async (db) => {
+      const id = await addResource(db, userB, "from-b");
+
+      expect(await setResourceProgress(db, userA, id, 50)).toBeNull();
+      expect(await getResource(db, userB, id)).toMatchObject({
+        progress: 0,
+        status: "want",
+      });
+    }));
+
+  it("should return null when the id is not valid", () =>
+    withTestDb(async (db) => {
+      expect(await setResourceProgress(db, userA, "nope", 50)).toBeNull();
+    }));
+});
+
+describe("setting status", () => {
+  it("should keep the percentage when changing to done", () =>
+    withTestDb(async (db) => {
+      const id = await addResource(db, userA, "status");
+      await setResourceProgress(db, userA, id, 40);
+
+      const result = await setResourceStatus(db, userA, id, "done");
+
+      expect(result).toMatchObject({
+        resource: { progress: 40, status: "done" },
+      });
+    }));
+
+  it("should refuse an unknown status", () =>
+    withTestDb(async (db) => {
+      const id = await addResource(db, userA, "unknown");
+
+      expect(await setResourceStatus(db, userA, id, "paused")).toEqual({
+        kind: "invalid_status",
+      });
+    }));
+
+  it("should not change another user's resource", () =>
+    withTestDb(async (db) => {
+      const id = await addResource(db, userB, "from-b");
+
+      expect(await setResourceStatus(db, userA, id, "done")).toBeNull();
+      expect(await getResource(db, userB, id)).toMatchObject({
+        status: "want",
       });
     }));
 });

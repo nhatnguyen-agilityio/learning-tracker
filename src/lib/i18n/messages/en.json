@@ -86,7 +86,6 @@
   "resourceDetail": {
     "openLink": "Open original link",
     "edit": "Edit",
-    "progress": "Progress",
     "cards": "Cards",
     "notFound": "This source doesn't exist",
     "backToLibrary": "Back to Library",
@@ -114,5 +113,15 @@
     "failed": "Could not save. Your text is still here.",
     "tooLarge": "This note is over the 100 KB limit. Shorten it to save.",
     "size": "{used} of {max} KB"
+  },
+  "progress": {
+    "label": "Progress",
+    "status": "Status",
+    "saving": "Saving",
+    "saved": "Saved",
+    "failed": "Progress not saved yet",
+    "suggestDone": "You reached 100%. Mark this source as Done?",
+    "markDone": "Mark as Done",
+    "notNow": "Not now"
   }
 }
