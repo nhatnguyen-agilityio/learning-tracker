@@ -10,7 +10,7 @@ import {
   useSyncExternalStore,
   useTransition,
 } from "react";
-import { loadReviewBatch } from "@/app/review/actions";
+import { loadReviewBatch, loadStreak } from "@/app/review/actions";
 import { Button } from "@/components/ui/button";
 import type { ReviewRating } from "@/domain/fsrs";
 import {
@@ -114,6 +114,7 @@ export function ReviewSession({
   const [session, setSession] = useState(() => startSession(cards));
   const [remaining, setRemaining] = useState(initialRemaining);
   const [batchFailed, setBatchFailed] = useState(false);
+  const [streak, setStreak] = useState<number | null>(null);
   const [loadingBatch, startLoadingBatch] = useTransition();
   const [flipped, setFlipped] = useState(false);
   const [undoFailed, setUndoFailed] = useState(false);
@@ -162,6 +163,23 @@ export function ReviewSession({
   const card = item?.card;
   const left = cardsLeft(session);
   const summary = summarize(session);
+
+  // Read after the queue is empty, so today's ratings are counted.
+  const showingSummary = !card && summary.reviewed > 0;
+  const allSent = queueState.pending === 0;
+  useEffect(() => {
+    if (!showingSummary || !allSent) return;
+
+    let current = true;
+    loadStreak()
+      .then((value) => {
+        if (current) setStreak(value);
+      })
+      .catch(() => {});
+    return () => {
+      current = false;
+    };
+  }, [showingSummary, allSent]);
 
   function keepReviewing() {
     setBatchFailed(false);
@@ -325,6 +343,7 @@ export function ReviewSession({
         <ReviewSummary
           summary={summary}
           remaining={remaining}
+          streak={streak}
           pending={queueState.pending}
           loading={loadingBatch}
           loadFailed={batchFailed}
