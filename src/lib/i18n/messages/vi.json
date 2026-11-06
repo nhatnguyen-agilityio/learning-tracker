@@ -172,6 +172,14 @@
     "showMore": "Xem thêm",
     "errorTitle": "Không tải được thẻ",
     "errorBody": "Kiểm tra kết nối rồi thử lại.",
-    "retry": "Thử lại"
+    "retry": "Thử lại",
+    "suspend": "Tạm ngưng",
+    "resume": "Bật lại",
+    "delete": "Xoá",
+    "deleteTitle": "Xoá thẻ này?",
+    "deleteBody": "Không hoàn tác được.",
+    "cancel": "Huỷ",
+    "confirmDelete": "Xoá thẻ",
+    "actionFailed": "Chưa thực hiện được. Thử lại."
   }
 }

@@ -1,14 +1,16 @@
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
-import { cardSchedules, cards } from "@/lib/db/schema";
+import { cardSchedules, cards, reviews } from "@/lib/db/schema";
 import { SEEDED_USERS, withTestDb } from "@/lib/db/test-db";
 import type { Db } from "@/lib/db/types";
 import { MAX_CARD_SIDE_BYTES, MAX_CARDS_PER_USER } from "./card-limits";
 import {
   createCard,
+  deleteCard,
   getCard,
   listCards,
   listResourceCards,
+  setCardSuspended,
   updateCard,
 } from "./cards";
 import { createResource, deleteResource } from "./resources";
@@ -325,5 +327,130 @@ describe("updating cards", () => {
 
       expect(await updateCard(db, userA, id, changed)).toBeNull();
       expect(await getCard(db, userB, id)).toEqual({ id, ...sides });
+    }));
+});
+
+async function addReview(db: Db, userId: string, cardId: string) {
+  await db.insert(reviews).values({
+    cardId,
+    userId,
+    rating: 3,
+    elapsedDays: 0,
+    scheduledDays: 1,
+    idempotencyKey: crypto.randomUUID(),
+    prevSchedule: {},
+  });
+}
+
+async function readCard(db: Db, id: string) {
+  const [card] = await db
+    .select({ status: cards.status, deletedAt: cards.deletedAt })
+    .from(cards)
+    .where(eq(cards.id, id));
+  return card;
+}
+
+describe("suspending cards", () => {
+  it("should suspend and resume a card and keep its schedule", () =>
+    withTestDb(async (db) => {
+      const resourceId = await addResource(db, userA);
+      const id = await addCard(db, userA, resourceId);
+      const readSchedule = () =>
+        db
+          .select({ due: cardSchedules.due, reps: cardSchedules.reps })
+          .from(cardSchedules)
+          .where(eq(cardSchedules.cardId, id));
+      const before = await readSchedule();
+
+      await setCardSuspended(db, userA, id, true);
+      expect((await readCard(db, id)).status).toBe("suspended");
+
+      await setCardSuspended(db, userA, id, false);
+      expect((await readCard(db, id)).status).toBe("active");
+      expect(await readSchedule()).toEqual(before);
+    }));
+
+  it("should not suspend a pending card", () =>
+    withTestDb(async (db) => {
+      const resourceId = await addResource(db, userA);
+      const id = await addCard(db, userA, resourceId);
+      await db.update(cards).set({ status: "pending" }).where(eq(cards.id, id));
+
+      expect(await setCardSuspended(db, userA, id, true)).toBeNull();
+      expect((await readCard(db, id)).status).toBe("pending");
+    }));
+
+  it("should not suspend another user's card", () =>
+    withTestDb(async (db) => {
+      const resourceId = await addResource(db, userB);
+      const id = await addCard(db, userB, resourceId);
+
+      expect(await setCardSuspended(db, userA, id, true)).toBeNull();
+      expect((await readCard(db, id)).status).toBe("active");
+    }));
+
+  it("should return null when the id is not valid", () =>
+    withTestDb(async (db) => {
+      expect(await setCardSuspended(db, userA, "nope", true)).toBeNull();
+    }));
+});
+
+describe("deleting cards", () => {
+  it("should soft delete a reviewed card and keep its reviews", () =>
+    withTestDb(async (db) => {
+      const resourceId = await addResource(db, userA);
+      const id = await addCard(db, userA, resourceId);
+      await addReview(db, userA, id);
+
+      expect(await deleteCard(db, userA, id)).toEqual({ resourceId });
+
+      expect((await readCard(db, id)).deletedAt).not.toBeNull();
+      expect(
+        await db
+          .select({ id: reviews.id })
+          .from(reviews)
+          .where(eq(reviews.cardId, id)),
+      ).toHaveLength(1);
+      expect(await getCard(db, userA, id)).toBeNull();
+    }));
+
+  it("should remove a never-reviewed card and its schedule", () =>
+    withTestDb(async (db) => {
+      const resourceId = await addResource(db, userA);
+      const id = await addCard(db, userA, resourceId);
+
+      expect(await deleteCard(db, userA, id)).toEqual({ resourceId });
+
+      expect(await readCard(db, id)).toBeUndefined();
+      expect(
+        await db
+          .select({ cardId: cardSchedules.cardId })
+          .from(cardSchedules)
+          .where(eq(cardSchedules.cardId, id)),
+      ).toEqual([]);
+    }));
+
+  it("should return null when the card is already deleted", () =>
+    withTestDb(async (db) => {
+      const resourceId = await addResource(db, userA);
+      const id = await addCard(db, userA, resourceId);
+      await addReview(db, userA, id);
+      await deleteCard(db, userA, id);
+
+      expect(await deleteCard(db, userA, id)).toBeNull();
+    }));
+
+  it("should not delete another user's card", () =>
+    withTestDb(async (db) => {
+      const resourceId = await addResource(db, userB);
+      const id = await addCard(db, userB, resourceId);
+
+      expect(await deleteCard(db, userA, id)).toBeNull();
+      expect(await readCard(db, id)).toBeDefined();
+    }));
+
+  it("should return null when the id is not valid", () =>
+    withTestDb(async (db) => {
+      expect(await deleteCard(db, userA, "nope")).toBeNull();
     }));
 });
