@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { MAX_CARD_SIDE_BYTES, validateCard } from "./card-limits";
+import {
+  CARDS_PAGE_SIZE,
+  MAX_CARD_SIDE_BYTES,
+  MAX_CARDS_PER_USER,
+  parseCardsShown,
+  validateCard,
+} from "./card-limits";
 
 describe("validateCard", () => {
   it("should pass when both sides have text", () => {
@@ -26,5 +32,27 @@ describe("validateCard", () => {
       front: null,
       back: "too_large",
     });
+  });
+});
+
+describe("parseCardsShown", () => {
+  it("should use the first page when there is no value", () => {
+    expect(parseCardsShown(undefined)).toBe(CARDS_PAGE_SIZE);
+  });
+
+  it("should keep a valid number", () => {
+    expect(parseCardsShown("200")).toBe(200);
+  });
+
+  it.each(["abc", "-5", "1.5", "0"])("should refuse %s", (value) => {
+    expect(parseCardsShown(value)).toBe(CARDS_PAGE_SIZE);
+  });
+
+  it("should use the first page when the value is repeated", () => {
+    expect(parseCardsShown(["200", "300"])).toBe(CARDS_PAGE_SIZE);
+  });
+
+  it("should stop at the card limit", () => {
+    expect(parseCardsShown("999999")).toBe(MAX_CARDS_PER_USER);
   });
 });

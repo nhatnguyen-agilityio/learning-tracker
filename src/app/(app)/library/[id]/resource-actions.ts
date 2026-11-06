@@ -12,6 +12,7 @@ export async function removeResource(resourceId: string) {
   if (!deleted) return false;
 
   revalidatePath("/library");
+  revalidatePath("/cards");
   revalidatePath(`/library/${resourceId}`);
   redirect("/library");
 }

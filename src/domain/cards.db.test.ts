@@ -4,8 +4,14 @@ import { cardSchedules, cards } from "@/lib/db/schema";
 import { SEEDED_USERS, withTestDb } from "@/lib/db/test-db";
 import type { Db } from "@/lib/db/types";
 import { MAX_CARD_SIDE_BYTES, MAX_CARDS_PER_USER } from "./card-limits";
-import { createCard, listResourceCards } from "./cards";
-import { createResource } from "./resources";
+import {
+  createCard,
+  getCard,
+  listCards,
+  listResourceCards,
+  updateCard,
+} from "./cards";
+import { createResource, deleteResource } from "./resources";
 
 const { a: userA, b: userB } = SEEDED_USERS;
 const sides = { front: "Question", back: "Answer" };
@@ -160,5 +166,164 @@ describe("listing cards of a resource", () => {
       await addCard(db, userB, resourceId);
 
       expect(await listResourceCards(db, userA, resourceId)).toEqual([]);
+    }));
+});
+
+describe("listing all cards", () => {
+  it("should include a card when its resource was deleted", () =>
+    withTestDb(async (db) => {
+      const resourceId = await addResource(db, userA);
+      const id = await addCard(db, userA, resourceId);
+      await deleteResource(db, userA, resourceId);
+
+      const { cards: rows } = await listCards(db, userA, 100);
+
+      expect(rows.find((row) => row.id === id)).toMatchObject({
+        resourceTitle: null,
+      });
+    }));
+
+  it("should show the resource title when the card has a resource", () =>
+    withTestDb(async (db) => {
+      const resourceId = await addResource(db, userA);
+      const id = await addCard(db, userA, resourceId);
+
+      const { cards: rows } = await listCards(db, userA, 100);
+
+      expect(rows.find((row) => row.id === id)).toMatchObject({
+        resourceTitle: "Guide",
+        isNew: true,
+      });
+    }));
+
+  it("should leave out deleted and pending cards", () =>
+    withTestDb(async (db) => {
+      const resourceId = await addResource(db, userA);
+      const deletedId = await addCard(db, userA, resourceId);
+      const pendingId = await addCard(db, userA, resourceId);
+      await db
+        .update(cards)
+        .set({ deletedAt: new Date() })
+        .where(eq(cards.id, deletedId));
+      await db
+        .update(cards)
+        .set({ status: "pending" })
+        .where(eq(cards.id, pendingId));
+
+      const { cards: rows } = await listCards(db, userA, 100);
+
+      const ids = rows.map((row) => row.id);
+      expect(ids).not.toContain(deletedId);
+      expect(ids).not.toContain(pendingId);
+    }));
+
+  it("should return one page and the full total", () =>
+    withTestDb(async (db) => {
+      const resourceId = await addResource(db, userA);
+      const { total: before } = await listCards(db, userA, 1);
+      await addCard(db, userA, resourceId);
+      await addCard(db, userA, resourceId);
+      await addCard(db, userA, resourceId);
+
+      const page = await listCards(db, userA, 2);
+
+      expect(page.cards).toHaveLength(2);
+      expect(page.total).toBe(before + 3);
+    }));
+
+  it("should not list another user's cards", () =>
+    withTestDb(async (db) => {
+      const resourceId = await addResource(db, userB);
+      const id = await addCard(db, userB, resourceId);
+
+      const { cards: rows } = await listCards(db, userA, 10000);
+
+      expect(rows.map((row) => row.id)).not.toContain(id);
+    }));
+});
+
+describe("reading one card", () => {
+  it("should return both sides when the user owns the card", () =>
+    withTestDb(async (db) => {
+      const resourceId = await addResource(db, userA);
+      const id = await addCard(db, userA, resourceId);
+
+      expect(await getCard(db, userA, id)).toEqual({ id, ...sides });
+    }));
+
+  it("should return null when the card belongs to another user", () =>
+    withTestDb(async (db) => {
+      const resourceId = await addResource(db, userB);
+      const id = await addCard(db, userB, resourceId);
+
+      expect(await getCard(db, userA, id)).toBeNull();
+    }));
+
+  it("should return null when the id is not valid", () =>
+    withTestDb(async (db) => {
+      expect(await getCard(db, userA, "nope")).toBeNull();
+    }));
+});
+
+describe("updating cards", () => {
+  const changed = { front: "New question", back: "New answer" };
+
+  it("should change the text and keep the schedule", () =>
+    withTestDb(async (db) => {
+      const resourceId = await addResource(db, userA);
+      const id = await addCard(db, userA, resourceId);
+      await db
+        .update(cardSchedules)
+        .set({ state: 2, reps: 4 })
+        .where(eq(cardSchedules.cardId, id));
+
+      const result = await updateCard(db, userA, id, changed);
+
+      expect(result).toEqual({
+        kind: "updated",
+        card: { id, resourceId },
+      });
+      expect(await getCard(db, userA, id)).toEqual({ id, ...changed });
+      const [schedule] = await db
+        .select({ state: cardSchedules.state, reps: cardSchedules.reps })
+        .from(cardSchedules)
+        .where(eq(cardSchedules.cardId, id));
+      expect(schedule).toEqual({ state: 2, reps: 4 });
+    }));
+
+  it("should refuse the change when a side is empty", () =>
+    withTestDb(async (db) => {
+      const resourceId = await addResource(db, userA);
+      const id = await addCard(db, userA, resourceId);
+
+      const result = await updateCard(db, userA, id, {
+        front: "",
+        back: "Answer",
+      });
+
+      expect(result).toMatchObject({ kind: "invalid" });
+      expect(await getCard(db, userA, id)).toEqual({ id, ...sides });
+    }));
+
+  it("should refuse the change when a side is over 10 KB", () =>
+    withTestDb(async (db) => {
+      const resourceId = await addResource(db, userA);
+      const id = await addCard(db, userA, resourceId);
+
+      const result = await updateCard(db, userA, id, {
+        front: "a".repeat(MAX_CARD_SIDE_BYTES + 1),
+        back: "Answer",
+      });
+
+      expect(result).toMatchObject({ kind: "invalid" });
+    }));
+
+  it("should not change another user's card", () =>
+    withTestDb(async (db) => {
+      const resourceId = await addResource(db, userB);
+      const id = await addCard(db, userB, resourceId);
+
+      expect(await updateCard(db, userA, id, changed)).toBeNull();
+      expect(await getCard(db, userB, id)).toEqual({ id, ...sides });
     }));
 });

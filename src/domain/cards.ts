@@ -1,8 +1,9 @@
-import { and, asc, count, eq, isNull } from "drizzle-orm";
-import { cardSchedules, cards } from "@/lib/db/schema";
+import { and, asc, count, desc, eq, isNull, ne } from "drizzle-orm";
+import { cardSchedules, cards, resources } from "@/lib/db/schema";
 import type { Db } from "@/lib/db/types";
 import { MAX_CARDS_PER_USER, validateCard } from "./card-limits";
 import { getResource } from "./resources";
+import { isUuid } from "./uuid";
 
 /** Cards of a resource, oldest first, leaving out deleted ones. */
 export async function listResourceCards(
@@ -70,4 +71,87 @@ export async function createCard(
       .values({ cardId: card.id, userId, due: new Date() });
     return { kind: "created", card } as const;
   });
+}
+
+/**
+ * The Cards screen, newest first, with cards detached from a resource too.
+ * Pending cards wait in their own tab (SPEC.md, F5).
+ */
+export async function listCards(db: Db, userId: string, limit: number) {
+  const listed = and(
+    eq(cards.userId, userId),
+    isNull(cards.deletedAt),
+    ne(cards.status, "pending"),
+  );
+
+  const [rows, [{ total }]] = await Promise.all([
+    db
+      .select({
+        id: cards.id,
+        front: cards.front,
+        status: cards.status,
+        state: cardSchedules.state,
+        resourceTitle: resources.title,
+      })
+      .from(cards)
+      .leftJoin(cardSchedules, eq(cardSchedules.cardId, cards.id))
+      .leftJoin(resources, eq(resources.id, cards.resourceId))
+      .where(listed)
+      .orderBy(desc(cards.createdAt), desc(cards.id))
+      .limit(limit),
+    db.select({ total: count() }).from(cards).where(listed),
+  ]);
+
+  return {
+    total,
+    cards: rows.map(({ state, ...card }) => ({
+      ...card,
+      isNew: state === 0,
+    })),
+  };
+}
+
+/** Returns null for another user's card, the same as for a missing one. */
+export async function getCard(db: Db, userId: string, cardId: string) {
+  if (!isUuid(cardId)) return null;
+
+  const [card] = await db
+    .select({ id: cards.id, front: cards.front, back: cards.back })
+    .from(cards)
+    .where(
+      and(
+        eq(cards.userId, userId),
+        eq(cards.id, cardId),
+        isNull(cards.deletedAt),
+      ),
+    );
+  return card ?? null;
+}
+
+/**
+ * Changes the text only, so the review schedule stays as it is.
+ * Returns null for another user's card, the same as for a missing one.
+ */
+export async function updateCard(
+  db: Db,
+  userId: string,
+  cardId: string,
+  sides: { front: string; back: string },
+) {
+  const errors = validateCard(sides);
+  if (errors) return { kind: "invalid", errors } as const;
+  if (!isUuid(cardId)) return null;
+
+  const [card] = await db
+    .update(cards)
+    .set({ front: sides.front.trim(), back: sides.back.trim() })
+    .where(
+      and(
+        eq(cards.userId, userId),
+        eq(cards.id, cardId),
+        isNull(cards.deletedAt),
+      ),
+    )
+    .returning({ id: cards.id, resourceId: cards.resourceId });
+  return card ? ({ kind: "updated", card } as const) : null;
 }
