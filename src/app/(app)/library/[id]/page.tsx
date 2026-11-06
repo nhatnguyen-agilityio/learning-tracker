@@ -2,6 +2,7 @@ import { ArrowLeftIcon, ExternalLinkIcon } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
+import { CardsSection } from "@/components/cards/cards-section";
 import { DeleteResourceButton } from "@/components/delete-resource-button";
 import { NotesSection } from "@/components/notes/notes-section";
 import { ResourceModal } from "@/components/resource-modal/resource-modal";
@@ -9,8 +10,9 @@ import { ResourceThumbnail } from "@/components/resource-modal/resource-thumbnai
 import { ResourceProgress } from "@/components/resource-progress";
 import { TopicDot } from "@/components/topic-dot";
 import { Button } from "@/components/ui/button";
+import { listResourceCards } from "@/domain/cards";
 import { listNotes } from "@/domain/notes";
-import { countResourceCards, getResource } from "@/domain/resources";
+import { getResource } from "@/domain/resources";
 import { listResourceTopics, listTopics } from "@/domain/topics";
 import { requireUserId } from "@/lib/auth/session";
 import { getDb } from "@/lib/db/client";
@@ -28,16 +30,15 @@ export default async function ResourceDetail({
   const resource = await getResource(db, userId, id);
   if (!resource) notFound();
 
-  const [t, tForm, tNav, topics, allTopics, notes, cardCount] =
-    await Promise.all([
-      getTranslations("resourceDetail"),
-      getTranslations("resourceForm"),
-      getTranslations("nav"),
-      listResourceTopics(db, userId, id),
-      listTopics(db, userId),
-      listNotes(db, userId, id),
-      countResourceCards(db, userId, id),
-    ]);
+  const [t, tForm, tNav, topics, allTopics, notes, cards] = await Promise.all([
+    getTranslations("resourceDetail"),
+    getTranslations("resourceForm"),
+    getTranslations("nav"),
+    listResourceTopics(db, userId, id),
+    listTopics(db, userId),
+    listNotes(db, userId, id),
+    listResourceCards(db, userId, id),
+  ]);
 
   return (
     <>
@@ -87,13 +88,15 @@ export default async function ResourceDetail({
         initialStatus={resource.status}
       />
       <NotesSection resourceId={id} initialNotes={notes} />
-      <section className="rounded-lg border border-border bg-card p-4">
-        <h2 className="font-semibold">{t("cards")}</h2>
-      </section>
+      <CardsSection
+        resourceId={id}
+        resourceTitle={resource.title}
+        cards={cards}
+      />
       <DeleteResourceButton
         resourceId={id}
         noteCount={notes.length}
-        cardCount={cardCount}
+        cardCount={cards.length}
       />
     </>
   );

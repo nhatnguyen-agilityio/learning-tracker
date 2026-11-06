@@ -86,7 +86,6 @@
   "resourceDetail": {
     "openLink": "Mở link gốc",
     "edit": "Sửa",
-    "cards": "Thẻ",
     "notFound": "Không tìm thấy nguồn này",
     "backToLibrary": "Về Library",
     "errorTitle": "Không tải được nguồn này"
@@ -135,5 +134,28 @@
     "withNotes": "Xoá nguồn và ghi chú",
     "deleting": "Đang xoá",
     "failed": "Không xoá được nguồn. Thử lại."
+  },
+  "resourceCards": {
+    "title": "Thẻ",
+    "add": "Thêm thẻ",
+    "empty": "Nguồn này chưa có thẻ.",
+    "new": "Mới",
+    "source": "Nguồn",
+    "mode": "Chế độ soạn",
+    "write": "Viết",
+    "preview": "Xem",
+    "front": "Mặt trước",
+    "back": "Mặt sau",
+    "frontPlaceholder": "Câu hỏi",
+    "backPlaceholder": "Đáp án",
+    "markdownHint": "Hỗ trợ markdown và code block.",
+    "emptySide": "Chưa có nội dung.",
+    "frontEmpty": "Mặt trước không được để trống.",
+    "backEmpty": "Mặt sau không được để trống.",
+    "sideTooLarge": "Mặt thẻ này vượt giới hạn 10 KB. Hãy rút gọn để lưu.",
+    "limitReached": "Đã đạt hạn mức 10.000 thẻ. Xoá bớt thẻ cũ để thêm thẻ mới.",
+    "saveFailed": "Không lưu được thẻ. Nội dung bạn nhập vẫn còn đây.",
+    "cancel": "Huỷ",
+    "save": "Lưu thẻ"
   }
 }
