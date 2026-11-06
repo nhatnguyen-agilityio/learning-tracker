@@ -3,10 +3,9 @@ import { notes, resources, resourceTopics } from "@/lib/db/schema";
 import type { Db } from "@/lib/db/types";
 import { resourceFields } from "./resources";
 import { attachTopics } from "./topics";
+import { isUuid } from "./uuid";
 
 export const MAX_QUERY_LENGTH = 200;
-
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export type ResourceFilters = {
   query?: string;
@@ -53,7 +52,7 @@ export async function searchResources(
   const { status, topicId } = filters;
   const query = filters.query?.trim().slice(0, MAX_QUERY_LENGTH);
 
-  if (topicId && !UUID.test(topicId)) return [];
+  if (topicId && !isUuid(topicId)) return [];
 
   const rows = await db
     .select(resourceFields)

@@ -147,6 +147,9 @@ export async function editResource(
     })
     .catch((): SaveResult => ({ kind: "failed" }));
 
-  if (result.kind === "saved") revalidatePath("/library");
+  if (result.kind === "saved") {
+    revalidatePath("/library");
+    revalidatePath(`/library/${resourceId}`);
+  }
   return result;
 }
