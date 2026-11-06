@@ -3,6 +3,7 @@ import { rateLimits } from "@/lib/db/schema";
 import type { Db } from "@/lib/db/types";
 
 export const LINK_LOOKUP_LIMIT = { limit: 30, windowSeconds: 60 };
+export const MCP_LIMIT = { limit: 60, windowSeconds: 60 };
 
 /**
  * Counts one attempt and says whether it is allowed. The count and the window

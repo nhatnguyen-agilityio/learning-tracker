@@ -26,6 +26,16 @@ async function openNewResource(page: Page, title: string) {
   await expect(page.getByRole("heading", { name: title })).toBeVisible();
 }
 
+/** Retries, because a click before hydration does nothing. */
+async function openEdit(page: Page, front: string, back: string) {
+  await expect(async () => {
+    await row(page, front).getByRole("button", { name: "Edit" }).click();
+    await expect(dialog(page).getByLabel("Back")).toHaveValue(back, {
+      timeout: 1000,
+    });
+  }).toPass();
+}
+
 test.beforeEach(async ({ page }) => {
   await signInNewUser(page);
 });
@@ -45,8 +55,7 @@ test("should show the new text after editing a card", async ({ page }) => {
   await page.goto("/cards");
   await expect(row(page, "Old question")).toContainText("Edited guide");
 
-  await row(page, "Old question").getByRole("button", { name: "Edit" }).click();
-  await expect(dialog(page).getByLabel("Back")).toHaveValue("Old answer");
+  await openEdit(page, "Old question", "Old answer");
   await dialog(page).getByLabel("Front").fill("New question");
   await dialog(page).getByRole("button", { name: "Save card" }).click();
 
@@ -64,8 +73,7 @@ test("should keep the text and show an error when a side is emptied", async ({
   await addCard(page, "A question", "An answer");
   await page.goto("/cards");
 
-  await row(page, "A question").getByRole("button", { name: "Edit" }).click();
-  await expect(dialog(page).getByLabel("Back")).toHaveValue("An answer");
+  await openEdit(page, "A question", "An answer");
   await dialog(page).getByLabel("Back").fill("");
   await dialog(page).getByRole("button", { name: "Save card" }).click();
 
