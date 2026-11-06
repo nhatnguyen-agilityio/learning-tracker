@@ -1,6 +1,12 @@
 import { eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
-import { cardSchedules, cards, reviews, userSettings } from "@/lib/db/schema";
+import {
+  cardSchedules,
+  cards,
+  resources,
+  reviews,
+  userSettings,
+} from "@/lib/db/schema";
 import { SEEDED_USERS, withTestDb } from "@/lib/db/test-db";
 import type { Db } from "@/lib/db/types";
 import { REVIEW_BATCH_SIZE, selectReviewCards } from "./review-selection";
@@ -140,8 +146,31 @@ describe("selecting due cards", () => {
       expect(card).toMatchObject({
         front: "Q",
         back: "A",
+        resourceTitle: null,
         schedule: { state: REVIEW, reps: 0, lapses: 0, lastReview: null },
       });
+    }));
+
+  it("should return the resource title when the card has a resource", () =>
+    withCleanUser(async (db) => {
+      const [id] = await addDue(db, 1);
+      const [resource] = await db
+        .insert(resources)
+        .values({
+          userId: userA,
+          url: "https://selection.test/guide",
+          normalizedUrl: `https://selection.test/${crypto.randomUUID()}`,
+          title: "Guide",
+        })
+        .returning({ id: resources.id });
+      await db
+        .update(cards)
+        .set({ resourceId: resource.id })
+        .where(eq(cards.id, id));
+
+      const [card] = (await selectReviewCards(db, userA, now)).cards;
+
+      expect(card.resourceTitle).toBe("Guide");
     }));
 });
 

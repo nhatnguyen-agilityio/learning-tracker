@@ -181,5 +181,25 @@
     "cancel": "Cancel",
     "confirmDelete": "Delete card",
     "actionFailed": "That didn't work. Try again."
+  },
+  "review": {
+    "title": "Review",
+    "start": "Start reviewing",
+    "exit": "Exit",
+    "left": "{count, plural, one {# card left} other {# cards left}}",
+    "flip": "Show answer",
+    "answer": "Answer",
+    "forgot": "Forgot",
+    "vaguely": "Vaguely",
+    "remembered": "Remembered",
+    "help": "Could not recall the answer? Choose Forgot. Correct but took a long time? Choose Vaguely.",
+    "keyFlip": "Flip",
+    "keyRate": "Rate",
+    "saveFailed": "Could not save your last rating. Check your connection.",
+    "noneLeft": "No cards left for now.",
+    "backToday": "Back to Today",
+    "errorTitle": "Could not load your cards",
+    "errorBody": "No ratings were lost. Try again or go back to Today.",
+    "retry": "Try again"
   }
 }

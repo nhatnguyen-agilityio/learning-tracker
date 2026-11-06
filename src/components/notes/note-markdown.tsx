@@ -14,7 +14,7 @@ function domProps<Props extends { node?: unknown }>(props: Props) {
  */
 export function NoteMarkdown({ content }: { content: string }) {
   return (
-    <div className="flex flex-col gap-2 text-sm wrap-anywhere">
+    <div className="flex flex-col gap-2 text-sm wrap-anywhere [&_:not(pre)>code]:rounded-sm [&_:not(pre)>code]:bg-muted [&_:not(pre)>code]:px-1 [&_:not(pre)>code]:font-mono">
       <Markdown
         disallowedElements={["img"]}
         unwrapDisallowed
