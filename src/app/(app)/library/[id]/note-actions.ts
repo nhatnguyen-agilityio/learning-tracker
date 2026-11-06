@@ -9,7 +9,13 @@ export async function addNote(resourceId: string) {
   const userId = await requireUserId();
   const result = await createNote(getDb(), userId, resourceId);
 
-  return result?.kind === "created" ? result.note : null;
+  if (result?.kind === "created") {
+    revalidatePath(`/library/${resourceId}`);
+    return result;
+  }
+  return {
+    kind: result?.kind === "limit_reached" ? result.kind : "failed",
+  } as const;
 }
 
 export type SaveNoteResult = "saved" | "too_large" | "failed";
