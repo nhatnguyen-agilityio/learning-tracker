@@ -179,6 +179,36 @@ describe("creating resources", () => {
       });
     }));
 
+  it.each(["javascript:alert(1)", "data:image/png;base64,AAAA", "not a link"])(
+    "should not store the image when its link is not http or https: %s",
+    (thumbnailUrl) =>
+      withTestDb(async (db) => {
+        const result = await createResource(db, userA, {
+          url: link,
+          title: "Guide",
+          thumbnailUrl,
+        });
+
+        expect(result).toMatchObject({
+          kind: "created",
+          resource: { thumbnailUrl: null },
+        });
+      }),
+  );
+
+  it("should keep the image when its link is http or https", () =>
+    withTestDb(async (db) => {
+      const thumbnailUrl = "https://cdn.example.test/a.png";
+
+      const result = await createResource(db, userA, {
+        url: link,
+        title: "Guide",
+        thumbnailUrl,
+      });
+
+      expect(result).toMatchObject({ resource: { thumbnailUrl } });
+    }));
+
   it("should set progress to 100 when the new resource is done", () =>
     withTestDb(async (db) => {
       const result = await createResource(db, userA, {
@@ -258,6 +288,17 @@ describe("updating resources", () => {
       });
 
       expect(result).toEqual({ kind: "invalid_title" });
+    }));
+
+  it("should not store the image when an update gives a javascript link", () =>
+    withTestDb(async (db) => {
+      const id = await addResource(db, userA, "kept");
+
+      const result = await updateResource(db, userA, id, {
+        thumbnailUrl: "javascript:alert(1)",
+      });
+
+      expect(result).toMatchObject({ resource: { thumbnailUrl: null } });
     }));
 
   it("should ignore other fields when a caller passes them at runtime", () =>

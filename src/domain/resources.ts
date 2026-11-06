@@ -44,11 +44,13 @@ export type CreateResourceResult =
   | { kind: "created" | "duplicate"; resource: Resource }
   | { kind: "invalid_url" | "invalid_title" | "limit_reached" };
 
-/** An image link that is too long only loses the image, so it never blocks saving. */
+/** A bad image link only loses the image, so it never blocks saving. */
 function storableThumbnail(thumbnailUrl: string | null | undefined) {
-  return thumbnailUrl && thumbnailUrl.length > MAX_URL_LENGTH
-    ? null
-    : thumbnailUrl;
+  if (!thumbnailUrl) return thumbnailUrl;
+  if (thumbnailUrl.length > MAX_URL_LENGTH) return null;
+
+  const protocol = URL.parse(thumbnailUrl)?.protocol;
+  return protocol === "http:" || protocol === "https:" ? thumbnailUrl : null;
 }
 
 async function findByNormalizedUrl(
