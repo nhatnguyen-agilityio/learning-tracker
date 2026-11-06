@@ -81,6 +81,16 @@ test("should show the results when no cards are left", async ({ page }) => {
   ).toBeHidden();
 });
 
+test("should show a streak of 1 after the first review", async ({ page }) => {
+  await openResource(page, "Streak guide");
+  await addCard(page, "First review");
+  await page.goto("/review");
+  await flip(page);
+  await page.keyboard.press("3");
+
+  await expect(page.getByText("day streak").locator("..")).toContainText("1");
+});
+
 test("should go back to the card when undoing from the summary", async ({
   page,
 }) => {

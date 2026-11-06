@@ -1,17 +1,29 @@
 /** A review day starts at 04:00 in the user's time zone (SPEC.md). */
 const DAY_START_HOUR = 4;
 
+const formatters = new Map<string, Intl.DateTimeFormat>();
+
+/** Building a formatter is slow, and stats format every review. */
+function formatterFor(timezone: string) {
+  let formatter = formatters.get(timezone);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat("en-US", {
+      timeZone: timezone,
+      hourCycle: "h23",
+      year: "numeric",
+      month: "numeric",
+      day: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      second: "numeric",
+    });
+    formatters.set(timezone, formatter);
+  }
+  return formatter;
+}
+
 function wallClock(instant: Date, timezone: string) {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: timezone,
-    hourCycle: "h23",
-    year: "numeric",
-    month: "numeric",
-    day: "numeric",
-    hour: "numeric",
-    minute: "numeric",
-    second: "numeric",
-  }).formatToParts(instant);
+  const parts = formatterFor(timezone).formatToParts(instant);
   const value = (type: Intl.DateTimeFormatPartTypes) =>
     Number(parts.find((part) => part.type === type)?.value);
 

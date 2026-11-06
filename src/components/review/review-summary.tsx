@@ -21,6 +21,7 @@ const SEGMENTS = [
 export function ReviewSummary({
   summary,
   remaining,
+  streak,
   pending,
   loading,
   loadFailed,
@@ -28,6 +29,7 @@ export function ReviewSummary({
 }: {
   summary: SessionSummary;
   remaining: number;
+  streak: number | null;
   pending: number;
   loading: boolean;
   loadFailed: boolean;
@@ -49,7 +51,10 @@ export function ReviewSummary({
       <div className="grid grid-cols-3 gap-2">
         <Stat value={`${summary.reviewed}`} label={t("statCards")} />
         <Stat value={`${summary.recallRate}%`} label={t("statRate")} />
-        <Stat value="—" label={t("statStreak")} />
+        <Stat
+          value={streak === null ? "—" : `${streak}`}
+          label={t("statStreak")}
+        />
       </div>
       <div className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3">
         <div aria-hidden className="flex h-2 overflow-hidden rounded-full">
