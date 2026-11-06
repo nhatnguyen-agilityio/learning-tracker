@@ -217,7 +217,8 @@
     "editTitle": "Sửa thẻ",
     "edit": "Sửa",
     "noSource": "Không có nguồn",
-    "loadFailed": "Không tải được thẻ. Thử lại."
+    "loadFailed": "Không tải được thẻ. Thử lại.",
+    "pending": "Chờ duyệt"
   },
   "cardsScreen": {
     "count": "{count} thẻ",
@@ -237,7 +238,13 @@
     "deleteBody": "Không hoàn tác được.",
     "cancel": "Huỷ",
     "confirmDelete": "Xoá thẻ",
-    "actionFailed": "Chưa thực hiện được. Thử lại."
+    "actionFailed": "Chưa thực hiện được. Thử lại.",
+    "tabs": "Danh sách thẻ",
+    "allCards": "Tất cả thẻ",
+    "pendingTab": "Chờ duyệt",
+    "pendingEmpty": "Không có thẻ nào chờ duyệt.",
+    "approve": "Duyệt",
+    "approveAll": "Duyệt tất cả"
   },
   "review": {
     "title": "Ôn tập",
@@ -291,7 +298,8 @@
     "openLibrary": "Mở Library",
     "errorTitle": "Không tải được dữ liệu hôm nay",
     "errorBody": "Kiểm tra kết nối rồi thử lại.",
-    "retry": "Thử lại"
+    "retry": "Thử lại",
+    "pendingNote": "{count} thẻ từ Claude đang chờ bạn duyệt."
   },
   "legal": {
     "back": "Quay lại",

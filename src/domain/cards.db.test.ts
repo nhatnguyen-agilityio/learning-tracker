@@ -9,11 +9,15 @@ import {
   MAX_CARDS_PER_USER,
 } from "./card-limits";
 import {
+  approveAllCards,
+  approveCard,
+  countPendingCards,
   createCard,
   createPendingCards,
   deleteCard,
   getCard,
   listCards,
+  listPendingCards,
   listResourceCards,
   setCardSuspended,
   updateCard,
@@ -570,5 +574,131 @@ describe("creating pending cards", () => {
         await createPendingCards(db, userA, { resourceId, cards: [sides] }),
       ).toBeNull();
       expect(await listResourceCards(db, userB, resourceId)).toEqual([]);
+    }));
+});
+
+describe("approving cards", () => {
+  async function addPending(db: Db, userId: string, resourceId?: string) {
+    const result = await createPendingCards(db, userId, {
+      resourceId,
+      cards: [sides],
+    });
+    if (result?.kind !== "created") throw new Error("Card not created");
+    return result.ids[0];
+  }
+
+  const clean = (db: Db) => db.delete(cards).where(eq(cards.userId, userA));
+
+  const readSchedules = (db: Db, id: string) =>
+    db
+      .select({ state: cardSchedules.state })
+      .from(cardSchedules)
+      .where(eq(cardSchedules.cardId, id));
+
+  it("should list and count pending cards with their resource", () =>
+    withTestDb(async (db) => {
+      await clean(db);
+      const resourceId = await addResource(db, userA);
+      const id = await addPending(db, userA, resourceId);
+      await addCard(db, userA, resourceId);
+
+      expect(await listPendingCards(db, userA)).toEqual([
+        { id, ...sides, resourceId, resourceTitle: "Guide" },
+      ]);
+      expect(await countPendingCards(db, userA)).toBe(1);
+    }));
+
+  it("should put an approved card in the new-card queue", () =>
+    withTestDb(async (db) => {
+      await clean(db);
+      const id = await addPending(db, userA);
+
+      await approveCard(db, userA, id, new Date());
+
+      expect(await readSchedules(db, id)).toEqual([{ state: 0 }]);
+      const session = await selectReviewCards(db, userA, new Date());
+      expect(session.cards.map((card) => card.id)).toContain(id);
+      expect(await countPendingCards(db, userA)).toBe(0);
+    }));
+
+  it("should do nothing when a card is approved twice", () =>
+    withTestDb(async (db) => {
+      await clean(db);
+      const id = await addPending(db, userA);
+      await approveCard(db, userA, id, new Date());
+
+      expect(await approveCard(db, userA, id, new Date())).toBeNull();
+      expect(await readSchedules(db, id)).toHaveLength(1);
+    }));
+
+  it("should approve only the cards of the given resource", () =>
+    withTestDb(async (db) => {
+      await clean(db);
+      const first = await addResource(db, userA);
+      const second = await addResource(db, userA);
+      await addPending(db, userA, first);
+      await addPending(db, userA, first);
+      const other = await addPending(db, userA, second);
+
+      expect(await approveAllCards(db, userA, first, new Date())).toBe(2);
+
+      const rows = await listPendingCards(db, userA);
+      expect(rows.map((row) => row.id)).toEqual([other]);
+    }));
+
+  it("should approve the cards with no resource when given null", () =>
+    withTestDb(async (db) => {
+      await clean(db);
+      const resourceId = await addResource(db, userA);
+      await addPending(db, userA);
+      const kept = await addPending(db, userA, resourceId);
+
+      expect(await approveAllCards(db, userA, null, new Date())).toBe(1);
+
+      const rows = await listPendingCards(db, userA);
+      expect(rows.map((row) => row.id)).toEqual([kept]);
+    }));
+
+  it("should remove a pending card for good when deleted", () =>
+    withTestDb(async (db) => {
+      await clean(db);
+      const id = await addPending(db, userA);
+
+      await deleteCard(db, userA, id);
+
+      expect(
+        await db.select({ id: cards.id }).from(cards).where(eq(cards.id, id)),
+      ).toEqual([]);
+    }));
+
+  it("should not approve another user's card", () =>
+    withTestDb(async (db) => {
+      const id = await addPending(db, userB);
+
+      expect(await approveCard(db, userA, id, new Date())).toBeNull();
+      expect(await readSchedules(db, id)).toEqual([]);
+    }));
+
+  it("should not approve all for another user's resource", () =>
+    withTestDb(async (db) => {
+      const resourceId = await addResource(db, userB);
+      await addPending(db, userB, resourceId);
+
+      expect(await approveAllCards(db, userA, resourceId, new Date())).toBe(0);
+    }));
+
+  it("should not list another user's pending cards", () =>
+    withTestDb(async (db) => {
+      await clean(db);
+      await addPending(db, userB);
+
+      expect(await listPendingCards(db, userA)).toEqual([]);
+      expect(await countPendingCards(db, userA)).toBe(0);
+    }));
+
+  it("should return null when the id is not valid", () =>
+    withTestDb(async (db) => {
+      expect(await approveCard(db, userA, "nope", new Date())).toBeNull();
+      expect(await approveAllCards(db, userA, "nope", new Date())).toBe(0);
     }));
 });

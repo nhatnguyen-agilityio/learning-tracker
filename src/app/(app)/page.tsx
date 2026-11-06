@@ -5,6 +5,7 @@ import { InProgressSection } from "@/components/today/in-progress-section";
 import { StreakCard } from "@/components/today/streak-card";
 import { Button } from "@/components/ui/button";
 import { countResources, listResourcesInProgress } from "@/domain/resources";
+import { countPendingCards } from "@/domain/cards";
 import { selectReviewCards } from "@/domain/review-selection";
 import { getReviewStats } from "@/domain/review-stats";
 import { DEFAULT_TIMEZONE } from "@/domain/timezone";
@@ -32,6 +33,7 @@ export default async function Today() {
     inProgress,
     resourceCount,
     topics,
+    pendingCount,
   ] = await Promise.all([
     getTranslations("today"),
     getTranslations("nav"),
@@ -43,6 +45,7 @@ export default async function Today() {
     listResourcesInProgress(db, userId),
     countResources(db, userId),
     listTopics(db, userId),
+    countPendingCards(db, userId),
   ]);
 
   const date = new Intl.DateTimeFormat(locale, {
@@ -62,6 +65,20 @@ export default async function Today() {
         <h1 className="text-2xl font-semibold">{tNav("today")}</h1>
         <p className="text-sm text-muted-foreground">{date}</p>
       </div>
+
+      {pendingCount > 0 ? (
+        <p
+          role="status"
+          className="rounded-md bg-warning-soft p-3 text-sm text-warning-soft-foreground"
+        >
+          <Link
+            href="/cards?tab=pending"
+            className="underline underline-offset-4"
+          >
+            {t("pendingNote", { count: pendingCount })}
+          </Link>
+        </p>
+      ) : null}
 
       {waiting > 0 ? (
         <section className="flex flex-col gap-3 rounded-lg border border-border bg-card px-4 py-6">

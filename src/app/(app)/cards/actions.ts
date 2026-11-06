@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import {
+  approveAllCards,
+  approveCard,
   deleteCard,
   getCard,
   setCardSuspended,
@@ -12,6 +14,7 @@ import { getDb } from "@/lib/db/client";
 import type { AddCardResult } from "../library/[id]/card-actions";
 
 function refreshPages(resourceId: string | null) {
+  revalidatePath("/");
   revalidatePath("/cards");
   if (resourceId) revalidatePath(`/library/${resourceId}`);
 }
@@ -50,5 +53,28 @@ export async function removeCard(cardId: string) {
 
   if (!card) return false;
   refreshPages(card.resourceId);
+  return true;
+}
+
+export async function approve(cardId: string) {
+  const userId = await requireUserId();
+  const card = await approveCard(getDb(), userId, cardId, new Date());
+
+  if (!card) return false;
+  refreshPages(card.resourceId);
+  return true;
+}
+
+export async function approveAll(resourceId: string | null) {
+  const userId = await requireUserId();
+  const approved = await approveAllCards(
+    getDb(),
+    userId,
+    resourceId,
+    new Date(),
+  );
+
+  if (approved === 0) return false;
+  refreshPages(resourceId);
   return true;
 }

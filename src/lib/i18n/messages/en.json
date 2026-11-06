@@ -217,7 +217,8 @@
     "editTitle": "Edit card",
     "edit": "Edit",
     "noSource": "No source",
-    "loadFailed": "Could not load this card. Try again."
+    "loadFailed": "Could not load this card. Try again.",
+    "pending": "Pending review"
   },
   "cardsScreen": {
     "count": "{count, plural, one {# card} other {# cards}}",
@@ -237,7 +238,13 @@
     "deleteBody": "This can't be undone.",
     "cancel": "Cancel",
     "confirmDelete": "Delete card",
-    "actionFailed": "That didn't work. Try again."
+    "actionFailed": "That didn't work. Try again.",
+    "tabs": "Card lists",
+    "allCards": "All cards",
+    "pendingTab": "Pending review",
+    "pendingEmpty": "No cards are waiting for review.",
+    "approve": "Approve",
+    "approveAll": "Approve all"
   },
   "review": {
     "title": "Review",
@@ -291,7 +298,8 @@
     "openLibrary": "Open Library",
     "errorTitle": "Could not load today’s data",
     "errorBody": "Check your connection and try again.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "pendingNote": "{count, plural, one {# card from Claude is} other {# cards from Claude are}} waiting for your review."
   },
   "legal": {
     "back": "Back",
