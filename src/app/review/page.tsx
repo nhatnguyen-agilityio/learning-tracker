@@ -12,6 +12,7 @@ export default async function Review() {
 
   return (
     <ReviewSession
+      userId={userId}
       cards={cards.map(({ id, front, back, resourceTitle }) => ({
         id,
         front,

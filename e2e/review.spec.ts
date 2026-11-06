@@ -117,20 +117,6 @@ test("should not show a rated card again after reloading", async ({ page }) => {
   await expect(page.getByText("Waiting question").first()).toBeVisible();
 });
 
-test("should show an error when saving fails", async ({ page }) => {
-  await addCards(page, [["Failed question", "Answer"]]);
-  await startReview(page);
-  await page.route("**/api/reviews", (route) => route.abort());
-
-  await flip(page);
-  await page.keyboard.press("3");
-
-  await expect(page.getByRole("alert").first()).toBeVisible();
-  await expect(
-    page.getByText("Could not save your last rating."),
-  ).toBeVisible();
-});
-
 test("should say so when there are no cards", async ({ page }) => {
   await page.goto("/review");
 

@@ -195,11 +195,13 @@
     "help": "Không nhớ ra đáp án thì chấm Quên; đúng nhưng phải nghĩ lâu thì chấm Mang máng.",
     "keyFlip": "Lật",
     "keyRate": "Chấm",
-    "saveFailed": "Chưa lưu được lượt chấm vừa rồi. Kiểm tra kết nối.",
     "noneLeft": "Hiện không còn thẻ nào.",
     "backToday": "Về Today",
     "errorTitle": "Không tải được thẻ",
     "errorBody": "Chưa có lượt chấm nào bị mất. Thử lại hoặc về Today.",
-    "retry": "Thử lại"
+    "retry": "Thử lại",
+    "offline": "Mất mạng. {count, plural, =0 {Bạn cứ ôn tiếp.} other {# lượt chấm đang chờ gửi lại, bạn cứ ôn tiếp.}}",
+    "resending": "Đang gửi {count} lượt chấm.",
+    "signedOut": "Phiên đăng nhập đã hết. Đăng nhập lại để gửi các lượt chấm."
   }
 }
