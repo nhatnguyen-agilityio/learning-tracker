@@ -1,20 +1,6 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import { addResource } from "./resources";
 import { signInNewUser } from "./sign-in";
-
-async function addResource(page: Page, title: string, topic?: string) {
-  await page.getByRole("button", { name: "Add a source" }).click();
-  const link = page.getByLabel("Paste a link");
-  await link.fill(`https://no-such-host.invalid/${crypto.randomUUID()}`);
-  await link.press("Enter");
-  await page.getByLabel("Title").fill(title);
-  if (topic) {
-    await page.getByRole("combobox").fill(topic);
-    await page.getByRole("button", { name: `Create "${topic}"` }).click();
-  }
-  await page.getByRole("button", { name: "Done" }).click();
-  await page.getByRole("button", { name: "Save source" }).click();
-  await expect(page.getByRole("dialog")).toBeHidden();
-}
 
 test.beforeEach(async ({ page }) => {
   await signInNewUser(page);

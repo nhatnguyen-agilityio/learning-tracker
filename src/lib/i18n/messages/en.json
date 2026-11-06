@@ -75,6 +75,11 @@
     "emptyBody": "Add an article, video or course you are following. Your review cards will show up here.",
     "errorTitle": "Could not load your library",
     "errorBody": "Check your connection and try again.",
-    "retry": "Try again"
+    "retry": "Try again",
+    "search": "Search",
+    "searchPlaceholder": "Search by title, URL or notes",
+    "all": "All",
+    "noResult": "No sources match.",
+    "clearFilters": "Clear filters"
   }
 }

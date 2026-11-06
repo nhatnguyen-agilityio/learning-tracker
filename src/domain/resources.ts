@@ -7,7 +7,7 @@ export const MAX_RESOURCES_PER_USER = 2000;
 export const MAX_URL_LENGTH = 2048;
 export const MAX_TITLE_LENGTH = 500;
 
-const resourceFields = {
+export const resourceFields = {
   id: resources.id,
   url: resources.url,
   title: resources.title,

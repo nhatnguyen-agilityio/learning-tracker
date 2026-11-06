@@ -1,7 +1,7 @@
 import { and, asc, eq, inArray, ne, sql } from "drizzle-orm";
 import { resourceTopics, topics } from "@/lib/db/schema";
 import type { Db } from "@/lib/db/types";
-import { getResource, listResources } from "./resources";
+import { getResource, type listResources } from "./resources";
 
 export const TOPIC_COLORS = [
   "topic-1",
@@ -22,6 +22,7 @@ const topicFields = {
 };
 
 type Topic = Awaited<ReturnType<typeof listTopics>>[number];
+type Resource = Awaited<ReturnType<typeof listResources>>[number];
 
 /** Gives new topics different colors without asking the user to choose. */
 export function nextTopicColor(topicCount: number) {
@@ -174,26 +175,37 @@ export function setResourceTopics(
 }
 
 export type ResourceWithTopics = Awaited<
-  ReturnType<typeof listResourcesWithTopics>
+  ReturnType<typeof attachTopics<Resource>>
 >[number];
 
-/** Two queries, so the cost doesn't grow with the number of resources. */
-export async function listResourcesWithTopics(db: Db, userId: string) {
-  const [rows, links] = await Promise.all([
-    listResources(db, userId),
-    db
-      .select({ resourceId: resourceTopics.resourceId, ...topicFields })
-      .from(resourceTopics)
-      .innerJoin(topics, eq(topics.id, resourceTopics.topicId))
-      .where(eq(resourceTopics.userId, userId))
-      .orderBy(asc(topics.name)),
-  ]);
+/** One query for all rows, so the cost doesn't grow with the number of rows. */
+export async function attachTopics<T extends { id: string }>(
+  db: Db,
+  userId: string,
+  rows: T[],
+) {
+  const links = await db
+    .select({ resourceId: resourceTopics.resourceId, ...topicFields })
+    .from(resourceTopics)
+    .innerJoin(topics, eq(topics.id, resourceTopics.topicId))
+    .where(eq(resourceTopics.userId, userId))
+    .orderBy(asc(topics.name));
 
   const byResource = Map.groupBy(links, (link) => link.resourceId);
-  return rows.map((resource) => ({
-    ...resource,
-    topics: (byResource.get(resource.id) ?? []).map(
+  return rows.map((row) => ({
+    ...row,
+    topics: (byResource.get(row.id) ?? []).map(
       ({ id, name, color }): Topic => ({ id, name, color }),
     ),
   }));
+}
+
+/** Topics linked to at least one resource, for the Library filter. */
+export function listUsedTopics(db: Db, userId: string) {
+  return db
+    .selectDistinct(topicFields)
+    .from(topics)
+    .innerJoin(resourceTopics, eq(resourceTopics.topicId, topics.id))
+    .where(eq(topics.userId, userId))
+    .orderBy(asc(topics.name));
 }

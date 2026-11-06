@@ -2,10 +2,11 @@ import { describe, expect, it } from "vitest";
 import { SEEDED_USERS, withTestDb } from "@/lib/db/test-db";
 import type { Db } from "@/lib/db/types";
 import { createResource, getResource } from "./resources";
+import { searchResources } from "./search-resources";
 import {
   createTopic,
   deleteTopic,
-  listResourcesWithTopics,
+  listUsedTopics,
   listResourceTopics,
   listTopics,
   MAX_TOPIC_NAME_LENGTH,
@@ -252,7 +253,7 @@ describe("listing resources with topics", () => {
       const resourceId = await addResource(db, userA);
       await setResourceTopics(db, userA, resourceId, [rust, go]);
 
-      const rows = await listResourcesWithTopics(db, userA);
+      const rows = await searchResources(db, userA);
       const row = rows.find((resource) => resource.id === resourceId);
 
       expect(row?.topics.map((topic) => topic.name)).toEqual(["Go", "Rust"]);
@@ -262,7 +263,7 @@ describe("listing resources with topics", () => {
     withTestDb(async (db) => {
       const resourceId = await addResource(db, userA);
 
-      const rows = await listResourcesWithTopics(db, userA);
+      const rows = await searchResources(db, userA);
 
       expect(rows.find((row) => row.id === resourceId)?.topics).toEqual([]);
     }));
@@ -273,8 +274,34 @@ describe("listing resources with topics", () => {
       const resourceId = await addResource(db, userB);
       await setResourceTopics(db, userB, resourceId, [go]);
 
-      const rows = await listResourcesWithTopics(db, userA);
+      const rows = await searchResources(db, userA);
 
       expect(rows.map((row) => row.id)).not.toContain(resourceId);
+    }));
+});
+
+describe("listing used topics", () => {
+  it("should list a topic only when a resource uses it", () =>
+    withTestDb(async (db) => {
+      const used = await addTopic(db, userA, "Used");
+      await addTopic(db, userA, "Unused");
+      const resourceId = await addResource(db, userA);
+      await setResourceTopics(db, userA, resourceId, [used]);
+
+      const rows = await listUsedTopics(db, userA);
+
+      expect(rows.map((topic) => topic.name)).toEqual(["Used"]);
+    }));
+
+  it("should not list another user's topics", () =>
+    withTestDb(async (db) => {
+      const name = `Other ${crypto.randomUUID()}`;
+      const other = await addTopic(db, userB, name);
+      const resourceId = await addResource(db, userB);
+      await setResourceTopics(db, userB, resourceId, [other]);
+
+      const rows = await listUsedTopics(db, userA);
+
+      expect(rows.map((topic) => topic.name)).not.toContain(name);
     }));
 });
