@@ -1,5 +1,5 @@
 import { and, asc, count, eq, isNull, lte, ne, sql } from "drizzle-orm";
-import { cardSchedules, cards, reviews } from "@/lib/db/schema";
+import { cardSchedules, cards, resources, reviews } from "@/lib/db/schema";
 import type { Db } from "@/lib/db/types";
 import { reviewDayStart } from "./review-day";
 import { DEFAULT_TIMEZONE } from "./timezone";
@@ -14,6 +14,7 @@ const reviewCardFields = {
   id: cards.id,
   front: cards.front,
   back: cards.back,
+  resourceTitle: resources.title,
   due: cardSchedules.due,
   stability: cardSchedules.stability,
   difficulty: cardSchedules.difficulty,
@@ -64,6 +65,7 @@ export async function selectReviewCards(db: Db, userId: string, now: Date) {
       .select(reviewCardFields)
       .from(cards)
       .innerJoin(cardSchedules, eq(cardSchedules.cardId, cards.id))
+      .leftJoin(resources, eq(resources.id, cards.resourceId))
       .where(isDue)
       .orderBy(asc(cardSchedules.due), asc(cards.id))
       .limit(REVIEW_BATCH_SIZE),
@@ -86,12 +88,15 @@ export async function selectReviewCards(db: Db, userId: string, now: Date) {
       });
 
   return {
-    cards: [...dueRows, ...newRows].map(({ id, front, back, ...schedule }) => ({
-      id,
-      front,
-      back,
-      schedule,
-    })),
+    cards: [...dueRows, ...newRows].map(
+      ({ id, front, back, resourceTitle, ...schedule }) => ({
+        id,
+        front,
+        back,
+        resourceTitle,
+        schedule,
+      }),
+    ),
     dueCount,
     isBacklog,
   };
@@ -119,6 +124,7 @@ async function selectNewCards(
     .select(reviewCardFields)
     .from(cards)
     .innerJoin(cardSchedules, eq(cardSchedules.cardId, cards.id))
+    .leftJoin(resources, eq(resources.id, cards.resourceId))
     .where(and(options.reviewable, eq(cardSchedules.state, NEW_STATE)))
     .orderBy(asc(cards.createdAt), asc(cards.id))
     .limit(limit);

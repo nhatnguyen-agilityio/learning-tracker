@@ -181,5 +181,25 @@
     "cancel": "Huỷ",
     "confirmDelete": "Xoá thẻ",
     "actionFailed": "Chưa thực hiện được. Thử lại."
+  },
+  "review": {
+    "title": "Ôn tập",
+    "start": "Bắt đầu ôn",
+    "exit": "Thoát",
+    "left": "{count} thẻ còn lại",
+    "flip": "Lật thẻ",
+    "answer": "Đáp án",
+    "forgot": "Quên",
+    "vaguely": "Mang máng",
+    "remembered": "Nhớ rõ",
+    "help": "Không nhớ ra đáp án thì chấm Quên; đúng nhưng phải nghĩ lâu thì chấm Mang máng.",
+    "keyFlip": "Lật",
+    "keyRate": "Chấm",
+    "saveFailed": "Chưa lưu được lượt chấm vừa rồi. Kiểm tra kết nối.",
+    "noneLeft": "Hiện không còn thẻ nào.",
+    "backToday": "Về Today",
+    "errorTitle": "Không tải được thẻ",
+    "errorBody": "Chưa có lượt chấm nào bị mất. Thử lại hoặc về Today.",
+    "retry": "Thử lại"
   }
 }
