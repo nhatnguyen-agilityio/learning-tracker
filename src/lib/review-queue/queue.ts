@@ -6,6 +6,10 @@ export type QueuedRating = {
   idempotencyKey: string;
 };
 
+export type QueuedUndo = { undo: true; idempotencyKey: string };
+
+export type QueuedAction = QueuedRating | QueuedUndo;
+
 /** done: saved. drop: resending can't help. retry: try later. stop: signed out. */
 export type SendResult = "done" | "drop" | "retry" | "stop";
 
@@ -14,7 +18,7 @@ export type QueueStatus = "idle" | "sending" | "retrying" | "stopped";
 type QueueOptions = {
   userId: string;
   storage: Pick<Storage, "getItem" | "setItem"> | null;
-  send: (entry: QueuedRating) => Promise<SendResult>;
+  send: (entry: QueuedAction) => Promise<SendResult>;
   onChange: (state: { pending: number; status: QueueStatus }) => void;
   /** Gets the cards rated on a past visit, which are already done. */
   onRestore?: (cardIds: string[]) => void;
@@ -27,13 +31,27 @@ export function retryDelay(attempt: number) {
   return Math.min(BASE_DELAY_MS * 2 ** attempt, MAX_DELAY_MS);
 }
 
-function isQueuedRating(value: unknown): value is QueuedRating {
+function isQueuedAction(value: unknown): value is QueuedAction {
   if (typeof value !== "object" || value === null) return false;
   const entry = value as Record<string, unknown>;
+  if (typeof entry.idempotencyKey !== "string") return false;
   return (
-    typeof entry.cardId === "string" &&
-    typeof entry.rating === "string" &&
-    typeof entry.idempotencyKey === "string"
+    entry.undo === true ||
+    (typeof entry.cardId === "string" && typeof entry.rating === "string")
+  );
+}
+
+function isUndo(entry: QueuedAction): entry is QueuedUndo {
+  return "undo" in entry;
+}
+
+/** Cards with a rating on its way, leaving out ratings that were undone. */
+function waitingCardIds(entries: QueuedAction[]) {
+  const undone = new Set(
+    entries.filter(isUndo).map((entry) => entry.idempotencyKey),
+  );
+  return entries.flatMap((entry) =>
+    isUndo(entry) || undone.has(entry.idempotencyKey) ? [] : [entry.cardId],
   );
 }
 
@@ -50,7 +68,7 @@ export function createReviewQueue({
   onRestore,
 }: QueueOptions) {
   const storageKey = `review-queue:${userId}`;
-  let entries: QueuedRating[] = [];
+  let entries: QueuedAction[] = [];
   let status: QueueStatus = "idle";
   let sending = false;
   let attempt = 0;
@@ -72,7 +90,7 @@ export function createReviewQueue({
   function load() {
     try {
       const parsed: unknown = JSON.parse(storage?.getItem(storageKey) ?? "[]");
-      entries = Array.isArray(parsed) ? parsed.filter(isQueuedRating) : [];
+      entries = Array.isArray(parsed) ? parsed.filter(isQueuedAction) : [];
     } catch {
       entries = [];
     }
@@ -112,11 +130,28 @@ export function createReviewQueue({
     /** Loads what a past visit left behind and starts sending it. */
     start() {
       load();
-      onRestore?.(entries.map((entry) => entry.cardId));
+      onRestore?.(waitingCardIds(entries));
       void flush();
     },
     add(entry: QueuedRating) {
       entries = [...entries, entry];
+      save();
+      void flush();
+    },
+    /**
+     * A rating the server hasn't seen is simply removed. One that is being sent
+     * or was sent needs an undo request, which goes after it in the queue.
+     */
+    undo(idempotencyKey: string) {
+      const index = entries.findIndex(
+        (entry) => !isUndo(entry) && entry.idempotencyKey === idempotencyKey,
+      );
+
+      if (index === -1 || (index === 0 && sending)) {
+        entries = [...entries, { undo: true, idempotencyKey }];
+      } else {
+        entries = entries.filter((_, position) => position !== index);
+      }
       save();
       void flush();
     },

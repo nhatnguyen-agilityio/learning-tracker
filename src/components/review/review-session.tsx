@@ -13,10 +13,18 @@ import { Button } from "@/components/ui/button";
 import type { ReviewRating } from "@/domain/fsrs";
 import {
   createReviewQueue,
-  type QueuedRating,
+  type QueuedAction,
   type QueueStatus,
   type SendResult,
 } from "@/lib/review-queue/queue";
+import {
+  cardsLeft,
+  currentItem,
+  dropCards,
+  rateCurrent,
+  startSession,
+  undoLast,
+} from "@/lib/review-session/session";
 import { ReviewCard, type ReviewCardData } from "./review-card";
 
 const RATINGS = [
@@ -49,13 +57,15 @@ function isTyping(target: EventTarget | null) {
   );
 }
 
-async function sendRating(entry: QueuedRating): Promise<SendResult> {
-  const response = await fetch("/api/reviews", {
+function postJson(url: string, body: unknown) {
+  return fetch(url, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify(entry),
+    body: JSON.stringify(body),
   });
+}
 
+function toSendResult(response: Response): SendResult {
   if (response.ok) return "done";
   if (response.status === 401) return "stop";
   return response.status < 500 ? "drop" : "retry";
@@ -94,9 +104,9 @@ export function ReviewSession({
   userId: string;
 }) {
   const t = useTranslations("review");
-  const [index, setIndex] = useState(0);
+  const [session, setSession] = useState(() => startSession(cards));
   const [flipped, setFlipped] = useState(false);
-  const [waitingIds, setWaitingIds] = useState<string[]>([]);
+  const [undoFailed, setUndoFailed] = useState(false);
   const [queueState, setQueueState] = useState<{
     pending: number;
     status: QueueStatus;
@@ -109,12 +119,23 @@ export function ReviewSession({
   const queue = useRef<ReturnType<typeof createReviewQueue>>(null);
 
   useEffect(() => {
+    async function send(entry: QueuedAction) {
+      if (!("undo" in entry)) {
+        return toSendResult(await postJson("/api/reviews", entry));
+      }
+      const response = await postJson("/api/reviews/undo", {
+        idempotencyKey: entry.idempotencyKey,
+      });
+      if (response.status === 409) setUndoFailed(true);
+      return toSendResult(response);
+    }
+
     const current = createReviewQueue({
       userId,
       storage: readStorage(),
-      send: sendRating,
+      send,
       onChange: setQueueState,
-      onRestore: setWaitingIds,
+      onRestore: (cardIds) => setSession((state) => dropCards(state, cardIds)),
     });
     queue.current = current;
     current.start();
@@ -127,26 +148,37 @@ export function ReviewSession({
     };
   }, [userId]);
 
-  const session = cards.filter((item) => !waitingIds.includes(item.id));
-  const card = session.at(index);
-  const left = session.length - index;
+  const item = currentItem(session);
+  const card = item?.card;
+  const left = cardsLeft(session);
 
   function rate(rating: ReviewRating) {
     if (!card) return;
 
-    queue.current?.add({
-      cardId: card.id,
-      rating,
-      idempotencyKey: crypto.randomUUID(),
-    });
-    setIndex((current) => current + 1);
+    const idempotencyKey = crypto.randomUUID();
+    queue.current?.add({ cardId: card.id, rating, idempotencyKey });
+    setSession((state) => rateCurrent(state, rating, idempotencyKey));
+    setFlipped(false);
+    setUndoFailed(false);
+  }
+
+  function undo() {
+    if (!session.last) return;
+
+    queue.current?.undo(session.last.idempotencyKey);
+    setSession(undoLast);
     setFlipped(false);
   }
 
   const onKeyDown = useEffectEvent((event: KeyboardEvent) => {
-    if (!card || event.repeat || isTyping(event.target)) return;
+    if (event.repeat || isTyping(event.target)) return;
     if (event.ctrlKey || event.metaKey || event.altKey) return;
 
+    if (event.key.toLowerCase() === "z") {
+      undo();
+      return;
+    }
+    if (!card) return;
     if (event.code === "Space") {
       event.preventDefault();
       setFlipped(true);
@@ -174,12 +206,22 @@ export function ReviewSession({
             {t("left", { count: left })}
           </span>
         ) : null}
+        <Button
+          variant="ghost"
+          size="sm"
+          disabled={!session.last}
+          onClick={undo}
+        >
+          {t("undo")}
+        </Button>
       </div>
-      {session.length > 0 ? (
+      {session.items.length > 0 ? (
         <span aria-hidden className="h-1 overflow-hidden rounded-full bg-muted">
           <span
             className="block h-full rounded-full bg-primary"
-            style={{ width: `${(index / session.length) * 100}%` }}
+            style={{
+              width: `${(session.position / session.items.length) * 100}%`,
+            }}
           />
         </span>
       ) : null}
@@ -199,6 +241,11 @@ export function ReviewSession({
           {t("resending", { count: queueState.pending })}
         </p>
       ) : null}
+      {undoFailed ? (
+        <p role="alert" className="text-sm text-destructive">
+          {t("undoFailed")}
+        </p>
+      ) : null}
       {queueState.status === "stopped" ? (
         <p role="alert" className="text-sm text-destructive">
           {t("signedOut")}
@@ -208,8 +255,9 @@ export function ReviewSession({
       {card ? (
         <div className="flex flex-1 flex-col justify-center gap-4">
           <ReviewCard
-            key={card.id}
+            key={`${card.id}-${session.position}`}
             card={card}
+            again={item?.again ?? false}
             flipped={flipped}
             onFlip={() => setFlipped(true)}
           />
@@ -245,7 +293,7 @@ export function ReviewSession({
           )}
           <p className="hidden items-center justify-center gap-1 text-xs text-muted-foreground min-[900px]:flex">
             <Kbd>Space</Kbd> {t("keyFlip")} <Kbd>1</Kbd> <Kbd>2</Kbd>{" "}
-            <Kbd>3</Kbd> {t("keyRate")}
+            <Kbd>3</Kbd> {t("keyRate")} <Kbd>Z</Kbd> {t("undo")}
           </p>
         </div>
       ) : (

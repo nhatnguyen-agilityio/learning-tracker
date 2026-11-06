@@ -202,6 +202,9 @@
     "retry": "Thử lại",
     "offline": "Mất mạng. {count, plural, =0 {Bạn cứ ôn tiếp.} other {# lượt chấm đang chờ gửi lại, bạn cứ ôn tiếp.}}",
     "resending": "Đang gửi {count} lượt chấm.",
-    "signedOut": "Phiên đăng nhập đã hết. Đăng nhập lại để gửi các lượt chấm."
+    "signedOut": "Phiên đăng nhập đã hết. Đăng nhập lại để gửi các lượt chấm.",
+    "undo": "Hoàn tác",
+    "again": "Ôn lại",
+    "undoFailed": "Không hoàn tác được lượt chấm đó."
   }
 }
