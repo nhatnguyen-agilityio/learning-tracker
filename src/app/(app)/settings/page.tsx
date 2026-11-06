@@ -1,33 +1,55 @@
 import { cookies } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { NewCardsField } from "@/components/settings/new-cards-field";
+import { TimezoneSelect } from "@/components/settings/timezone-select";
 import { ThemeSwitcher } from "@/components/theme-switcher";
+import { Button } from "@/components/ui/button";
+import { DEFAULT_TIMEZONE } from "@/domain/timezone";
+import { getUserSettings } from "@/domain/user-settings";
+import { signOut } from "@/lib/auth/actions";
 import { requireUserId } from "@/lib/auth/session";
+import { getDb } from "@/lib/db/client";
 import { resolveTheme, THEME_COOKIE } from "@/lib/theme/theme";
 
 // Every signed-in page depends on the request, so it waits for the server.
 export const instant = false;
 
 export default async function Settings() {
-  await requireUserId();
-  const [t, tNav, cookieStore] = await Promise.all([
+  const userId = await requireUserId();
+  const [t, tNav, cookieStore, settings] = await Promise.all([
     getTranslations("settings"),
     getTranslations("nav"),
     cookies(),
+    getUserSettings(getDb(), userId),
   ]);
   const theme = resolveTheme(cookieStore.get(THEME_COOKIE)?.value);
+  const timezone = settings?.timezone ?? DEFAULT_TIMEZONE;
 
   return (
     <>
       <h1 className="text-2xl font-semibold">{tNav("settings")}</h1>
-      <section className="flex flex-col gap-2">
-        <h2 className="font-semibold">{t("language")}</h2>
-        <LanguageSwitcher />
+      <section className="flex flex-col gap-4 rounded-lg border border-border bg-card p-4">
+        <h2 className="font-semibold">{t("learning")}</h2>
+        <NewCardsField initialValue={settings?.newCardsPerDay ?? 20} />
+        <TimezoneSelect
+          current={timezone}
+          timezones={Intl.supportedValuesOf("timeZone")}
+        />
+        <div className="flex flex-col gap-2">
+          <h3 className="text-sm font-medium">{t("language")}</h3>
+          <LanguageSwitcher />
+        </div>
+        <div className="flex flex-col gap-2">
+          <h3 className="text-sm font-medium">{t("appearance")}</h3>
+          <ThemeSwitcher current={theme} />
+        </div>
       </section>
-      <section className="flex flex-col gap-2">
-        <h2 className="font-semibold">{t("appearance")}</h2>
-        <ThemeSwitcher current={theme} />
-      </section>
+      <form action={signOut}>
+        <Button type="submit" variant="secondary">
+          {t("signOut")}
+        </Button>
+      </form>
     </>
   );
 }

@@ -30,7 +30,19 @@
     "language": "Language",
     "appearance": "Appearance",
     "light": "Light",
-    "dark": "Dark"
+    "dark": "Dark",
+    "learning": "Learning and display",
+    "perDay": "New cards per day",
+    "perDayHint": "Default is 20. New cards pause while you have overdue cards.",
+    "perDayError": "Enter a whole number from 0 to 100.",
+    "timezone": "Time zone",
+    "timezoneHint": "A new day starts at 04:00 in this time zone.",
+    "saved": "Saved",
+    "saveFailed": "Could not save this change. Try again.",
+    "signOut": "Sign out",
+    "errorTitle": "Could not load settings",
+    "errorBody": "Check your connection and try again.",
+    "retry": "Try again"
   },
   "resourceForm": {
     "add": "Add a source",

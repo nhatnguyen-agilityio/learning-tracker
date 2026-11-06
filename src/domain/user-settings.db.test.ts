@@ -3,7 +3,11 @@ import { describe, expect, it } from "vitest";
 import { userSettings } from "@/lib/db/schema";
 import { SEEDED_USERS, withTestDb } from "@/lib/db/test-db";
 import type { Db } from "@/lib/db/types";
-import { ensureUserSettings, getUserSettings } from "./user-settings";
+import {
+  ensureUserSettings,
+  getUserSettings,
+  updateUserSettings,
+} from "./user-settings";
 
 const { a: userA, b: userB } = SEEDED_USERS;
 const defaults = { timezone: "Asia/Ho_Chi_Minh", locale: "vi" };
@@ -43,5 +47,94 @@ describe("user settings", () => {
       await ensureUserSettings(db, userB, defaults);
 
       expect(await getUserSettings(db, userA)).toBeNull();
+    }));
+});
+
+describe("updating user settings", () => {
+  it("should change only the given field", () =>
+    withoutSettings(async (db) => {
+      await ensureUserSettings(db, userA, defaults);
+
+      const result = await updateUserSettings(db, userA, {
+        newCardsPerDay: 5,
+      });
+
+      expect(result).toEqual({
+        kind: "updated",
+        settings: { ...defaults, newCardsPerDay: 5 },
+      });
+    }));
+
+  it.each([0, 100])("should accept %d new cards per day", (newCardsPerDay) =>
+    withoutSettings(async (db) => {
+      await ensureUserSettings(db, userA, defaults);
+
+      const result = await updateUserSettings(db, userA, { newCardsPerDay });
+
+      expect(result?.kind).toBe("updated");
+    }),
+  );
+
+  it.each([-1, 101, 2.5, Number.NaN])(
+    "should refuse %d new cards per day",
+    (newCardsPerDay) =>
+      withoutSettings(async (db) => {
+        await ensureUserSettings(db, userA, defaults);
+
+        const result = await updateUserSettings(db, userA, { newCardsPerDay });
+
+        expect(result).toEqual({ kind: "invalid" });
+        expect(await getUserSettings(db, userA)).toMatchObject({
+          newCardsPerDay: 20,
+        });
+      }),
+  );
+
+  it("should change the time zone when it is valid", () =>
+    withoutSettings(async (db) => {
+      await ensureUserSettings(db, userA, defaults);
+
+      await updateUserSettings(db, userA, { timezone: "Asia/Tokyo" });
+
+      expect(await getUserSettings(db, userA)).toMatchObject({
+        timezone: "Asia/Tokyo",
+      });
+    }));
+
+  it("should refuse a time zone that doesn't exist", () =>
+    withoutSettings(async (db) => {
+      await ensureUserSettings(db, userA, defaults);
+
+      expect(
+        await updateUserSettings(db, userA, { timezone: "Mars/Base" }),
+      ).toEqual({ kind: "invalid" });
+    }));
+
+  it("should refuse a language the app doesn't have", () =>
+    withoutSettings(async (db) => {
+      await ensureUserSettings(db, userA, defaults);
+
+      expect(await updateUserSettings(db, userA, { locale: "fr" })).toEqual({
+        kind: "invalid",
+      });
+    }));
+
+  it("should change only the signed-in user's settings", () =>
+    withoutSettings(async (db) => {
+      await ensureUserSettings(db, userA, defaults);
+      await ensureUserSettings(db, userB, defaults);
+
+      await updateUserSettings(db, userA, { newCardsPerDay: 7 });
+
+      expect(await getUserSettings(db, userB)).toMatchObject({
+        newCardsPerDay: 20,
+      });
+    }));
+
+  it("should return null when the user has no settings", () =>
+    withoutSettings(async (db) => {
+      expect(
+        await updateUserSettings(db, userA, { newCardsPerDay: 7 }),
+      ).toBeNull();
     }));
 });
