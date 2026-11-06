@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useId, useState, useTransition } from "react";
+import { loadCard, saveCard } from "@/app/(app)/cards/actions";
 import { addCard } from "@/app/(app)/library/[id]/card-actions";
 import { NoteMarkdown } from "@/components/notes/note-markdown";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ type SideFieldProps = {
   placeholder: string;
   rows: number;
   value: string;
+  disabled: boolean;
   error: string | null;
   onChange: (value: string) => void;
 };
@@ -34,6 +36,7 @@ function SideField({
   placeholder,
   rows,
   value,
+  disabled,
   error,
   onChange,
 }: SideFieldProps) {
@@ -45,6 +48,7 @@ function SideField({
       <textarea
         id={id}
         rows={rows}
+        disabled={disabled}
         placeholder={placeholder}
         aria-invalid={error !== null}
         className="w-full resize-y rounded-md border border-input bg-transparent p-3 font-mono text-sm outline-none focus-visible:border-ring aria-invalid:border-destructive"
@@ -77,20 +81,28 @@ function SidePreview({
   );
 }
 
-export function CardModal({
-  resourceId,
-  resourceTitle,
-}: {
-  resourceId: string;
-  resourceTitle: string;
-}) {
+type Problem = "limit" | "failed" | "loadFailed";
+
+const problemMessages = {
+  limit: "limitReached",
+  failed: "saveFailed",
+  loadFailed: "loadFailed",
+} as const;
+
+type CardModalTarget =
+  | { kind: "add"; resourceId: string; resourceTitle: string }
+  | { kind: "edit"; cardId: string; resourceTitle: string | null };
+
+export function CardModal({ target }: { target: CardModalTarget }) {
   const t = useTranslations("resourceCards");
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<"write" | "preview">("write");
   const [front, setFront] = useState("");
   const [back, setBack] = useState("");
   const [errors, setErrors] = useState<CardErrors | null>(null);
-  const [problem, setProblem] = useState<"limit" | "failed" | null>(null);
+  const [problem, setProblem] = useState<Problem | null>(null);
+  const [loaded, setLoaded] = useState(target.kind === "add");
+  const [loading, startLoading] = useTransition();
   const [saving, startSaving] = useTransition();
 
   function sideMessage(
@@ -99,6 +111,26 @@ export function CardModal({
   ) {
     if (!error) return null;
     return t(error === "empty" ? `${side}Empty` : "sideTooLarge");
+  }
+
+  function changeOpen(next: boolean) {
+    setOpen(next);
+    if (!next || target.kind !== "edit") return;
+
+    setErrors(null);
+    setProblem(null);
+    setMode("write");
+    setLoaded(false);
+    startLoading(async () => {
+      const card = await loadCard(target.cardId).catch(() => null);
+      if (!card) {
+        setProblem("loadFailed");
+        return;
+      }
+      setFront(card.front);
+      setBack(card.back);
+      setLoaded(true);
+    });
   }
 
   function save() {
@@ -112,9 +144,11 @@ export function CardModal({
     }
 
     startSaving(async () => {
-      const result = await addCard(resourceId, sides).catch(
-        () => ({ kind: "failed" }) as const,
-      );
+      const request =
+        target.kind === "add"
+          ? addCard(target.resourceId, sides)
+          : saveCard(target.cardId, sides);
+      const result = await request.catch(() => ({ kind: "failed" }) as const);
       if (result.kind === "saved") {
         setFront("");
         setBack("");
@@ -129,25 +163,33 @@ export function CardModal({
     });
   }
 
+  const title = t(target.kind === "add" ? "add" : "editTitle");
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={changeOpen}>
       <DialogTrigger asChild>
-        <Button variant="secondary" size="sm">
-          {t("add")}
-        </Button>
+        {target.kind === "add" ? (
+          <Button variant="secondary" size="sm">
+            {title}
+          </Button>
+        ) : (
+          <Button variant="ghost" size="sm">
+            {t("edit")}
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t("add")}</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         <div className="flex max-h-[60vh] flex-col gap-3 overflow-y-auto">
           {problem ? (
             <p role="alert" className="text-sm text-destructive">
-              {t(problem === "limit" ? "limitReached" : "saveFailed")}
+              {t(problemMessages[problem])}
             </p>
           ) : null}
           <p className="text-xs text-muted-foreground wrap-anywhere">
-            {t("source")}: {resourceTitle}
+            {t("source")}: {target.resourceTitle ?? t("noSource")}
           </p>
           <div role="group" aria-label={t("mode")} className="flex gap-1">
             {(["write", "preview"] as const).map((option) => (
@@ -169,6 +211,7 @@ export function CardModal({
                 placeholder={t("frontPlaceholder")}
                 rows={3}
                 value={front}
+                disabled={!loaded}
                 error={sideMessage(errors?.front, "front")}
                 onChange={setFront}
               />
@@ -177,6 +220,7 @@ export function CardModal({
                 placeholder={t("backPlaceholder")}
                 rows={5}
                 value={back}
+                disabled={!loaded}
                 error={sideMessage(errors?.back, "back")}
                 onChange={setBack}
               />
@@ -203,7 +247,7 @@ export function CardModal({
           <Button variant="ghost" onClick={() => setOpen(false)}>
             {t("cancel")}
           </Button>
-          <Button disabled={saving} onClick={save}>
+          <Button disabled={saving || loading || !loaded} onClick={save}>
             {t("save")}
           </Button>
         </DialogFooter>

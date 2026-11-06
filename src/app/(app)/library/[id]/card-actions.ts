@@ -21,5 +21,6 @@ export async function addCard(
   if (result.kind !== "created") return result;
 
   revalidatePath(`/library/${resourceId}`);
+  revalidatePath("/cards");
   return { kind: "saved" };
 }

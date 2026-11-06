@@ -18,7 +18,7 @@ export function CardsSection({
     <section className="flex flex-col gap-2">
       <div className="flex items-center justify-between gap-2">
         <h2 className="font-semibold">{t("title")}</h2>
-        <CardModal resourceId={resourceId} resourceTitle={resourceTitle} />
+        <CardModal target={{ kind: "add", resourceId, resourceTitle }} />
       </div>
       {cards.length === 0 ? (
         <p className="rounded-lg border border-border bg-card p-4 text-sm text-muted-foreground">

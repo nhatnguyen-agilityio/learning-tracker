@@ -156,6 +156,22 @@
     "limitReached": "Đã đạt hạn mức 10.000 thẻ. Xoá bớt thẻ cũ để thêm thẻ mới.",
     "saveFailed": "Không lưu được thẻ. Nội dung bạn nhập vẫn còn đây.",
     "cancel": "Huỷ",
-    "save": "Lưu thẻ"
+    "save": "Lưu thẻ",
+    "editTitle": "Sửa thẻ",
+    "edit": "Sửa",
+    "noSource": "Không có nguồn",
+    "loadFailed": "Không tải được thẻ. Thử lại."
+  },
+  "cardsScreen": {
+    "count": "{count} thẻ",
+    "emptyTitle": "Chưa có thẻ nào",
+    "emptyBody": "Mở một nguồn và bấm Thêm thẻ, hoặc kết nối Claude để tạo thẻ từ ghi chú.",
+    "new": "Mới",
+    "active": "Đang ôn",
+    "suspended": "Tạm ngưng",
+    "showMore": "Xem thêm",
+    "errorTitle": "Không tải được thẻ",
+    "errorBody": "Kiểm tra kết nối rồi thử lại.",
+    "retry": "Thử lại"
   }
 }
