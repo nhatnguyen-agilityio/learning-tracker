@@ -36,9 +36,9 @@ function refusalFor(url: URL): SafeFetchFailure | null {
 }
 
 /**
- * Tải link người dùng đưa vào mà không để server bị dùng để gọi mạng nội bộ.
- * Mọi lượt, kể cả sau redirect, đều được kiểm tra lại; 5 giây tính chung cho cả
- * chuỗi. `body` chỉ dùng trong bộ nhớ để lấy metadata, không được lưu lại.
+ * Fetches a user's link without letting the server reach the internal network.
+ * Every hop, including after a redirect, is checked again; the 5 seconds cover
+ * the whole chain. `body` is only for reading metadata in memory, never stored.
  */
 export async function fetchSafely(
   input: string,

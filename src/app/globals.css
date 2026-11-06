@@ -1,7 +1,7 @@
 @import "tailwindcss";
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
-/* Nguồn: design system Learning Tracker, artboard 03. */
+/* Source: Learning Tracker design system, artboard 03. */
 :root {
   --background: #fcfaf5;
   --foreground: #1e1c18;

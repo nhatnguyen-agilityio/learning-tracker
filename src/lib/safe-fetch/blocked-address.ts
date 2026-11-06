@@ -29,8 +29,8 @@ const blockedIpv4 = subnets("ipv4", [
 const ipv4Mapped = subnets("ipv6", [["::ffff:0:0", 96]]);
 const globalUnicast = subnets("ipv6", [["2000::", 3]]);
 
-// Dải dành riêng của IETF, tài liệu và 6to4 nằm trong 2000::/3 nhưng không phải
-// đích công khai; Teredo (2001::/32) và 6to4 còn nhúng được IPv4 bất kỳ.
+// IETF-reserved, documentation and 6to4 ranges sit inside 2000::/3 but are not
+// public destinations; Teredo (2001::/32) and 6to4 can also embed any IPv4.
 const blockedGlobalUnicast = subnets("ipv6", [
   ["2001::", 23],
   ["2001:db8::", 32],
@@ -38,11 +38,11 @@ const blockedGlobalUnicast = subnets("ipv6", [
   ["3fff::", 20],
 ]);
 
-/** Địa chỉ không chắc chắn là IP công khai thì bị chặn. */
+/** An address that isn't certainly a public IP is blocked. */
 export function isBlockedAddress(address: string): boolean {
   const family = isIP(address);
   if (family === 4) return blockedIpv4.check(address, "ipv4");
-  // Địa chỉ có zone (fe80::1%en0) chỉ dùng trong mạng cục bộ.
+  // An address with a zone (fe80::1%en0) is only used on a local network.
   if (family !== 6 || address.includes("%")) return true;
   if (ipv4Mapped.check(address, "ipv6")) {
     return blockedIpv4.check(address, "ipv6");

@@ -3,7 +3,7 @@ import { setDefaultAutoSelectFamily, type AddressInfo } from "node:net";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createTransport, MAX_BYTES, type ResolveHost } from "./transport";
 
-// Server chỉ chạy trên loopback; hostname trong URL không bao giờ ra DNS thật.
+// The server runs on loopback only; hostnames in URLs never reach real DNS.
 const servers: Server[] = [];
 
 async function startServer(listener: RequestListener) {
