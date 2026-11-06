@@ -70,6 +70,12 @@ async function findByNormalizedUrl(
   return resource ?? null;
 }
 
+/** Returns null when the user doesn't have the link, or it isn't a valid link. */
+export async function findResourceByUrl(db: Db, userId: string, url: string) {
+  const normalizedUrl = normalizeUrl(url);
+  return normalizedUrl ? findByNormalizedUrl(db, userId, normalizedUrl) : null;
+}
+
 export function createResource(
   db: Db,
   userId: string,

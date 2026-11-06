@@ -23,6 +23,11 @@ const topicFields = {
 
 type Topic = Awaited<ReturnType<typeof listTopics>>[number];
 
+/** Gives new topics different colors without asking the user to choose. */
+export function nextTopicColor(topicCount: number) {
+  return TOPIC_COLORS[topicCount % TOPIC_COLORS.length];
+}
+
 function isTopicColor(color: string) {
   return TOPIC_COLORS.some((topicColor) => topicColor === color);
 }

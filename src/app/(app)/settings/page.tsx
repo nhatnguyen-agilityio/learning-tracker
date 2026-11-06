@@ -5,6 +5,9 @@ import { ThemeSwitcher } from "@/components/theme-switcher";
 import { requireUserId } from "@/lib/auth/session";
 import { resolveTheme, THEME_COOKIE } from "@/lib/theme/theme";
 
+// Every signed-in page depends on the request, so it waits for the server.
+export const instant = false;
+
 export default async function Settings() {
   await requireUserId();
   const [t, tNav, cookieStore] = await Promise.all([
