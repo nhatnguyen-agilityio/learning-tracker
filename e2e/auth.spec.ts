@@ -49,11 +49,13 @@ test("should show an error when the Google callback has no code", async ({
 test("should switch language on the sign-in screen", async ({ page }) => {
   await page.goto("/sign-in");
 
-  await page.getByRole("button", { name: "Tiếng Việt" }).click();
-
-  await expect(
-    page.getByRole("button", { name: "Đăng nhập bằng Google" }),
-  ).toBeVisible();
+  // Retries, because a click before hydration can be lost.
+  await expect(async () => {
+    await page.getByRole("button", { name: "Tiếng Việt" }).click();
+    await expect(
+      page.getByRole("button", { name: "Đăng nhập bằng Google" }),
+    ).toBeVisible({ timeout: 3000 });
+  }).toPass();
   await expect(page).toHaveURL("/sign-in");
 });
 

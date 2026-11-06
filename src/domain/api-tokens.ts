@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
-import { and, count, desc, eq, isNull } from "drizzle-orm";
+import { and, count, desc, eq, isNull, sql } from "drizzle-orm";
 import { apiTokens } from "@/lib/db/schema";
 import type { Db } from "@/lib/db/types";
 import { MAX_ACTIVE_TOKENS, MAX_TOKEN_NAME_LENGTH } from "./token-limits";
@@ -41,6 +41,9 @@ export function createToken(db: Db, userId: string, name: string) {
   }
 
   return db.transaction(async (tx) => {
+    // Two requests at once must not both see room under the limit.
+    await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${userId}))`);
+
     const [{ total }] = await tx
       .select({ total: count() })
       .from(apiTokens)
