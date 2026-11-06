@@ -18,13 +18,16 @@ async function discover(page: Page) {
 }
 
 /** Does what Claude does, up to the point where the consent page opens. */
-async function startFlow(page: Page) {
+async function startFlow(
+  page: Page,
+  { name = "Test connector", redirectUri = REDIRECT_URI } = {},
+) {
   const { server } = await discover(page);
   const registered = await (
     await page.request.post(server.registration_endpoint, {
       data: {
-        client_name: "Test connector",
-        redirect_uris: [REDIRECT_URI],
+        client_name: name,
+        redirect_uris: [redirectUri],
         token_endpoint_auth_method: "none",
         grant_types: ["authorization_code", "refresh_token"],
         response_types: ["code"],
@@ -38,7 +41,7 @@ async function startFlow(page: Page) {
   authorize.search = new URLSearchParams({
     response_type: "code",
     client_id: registered.client_id,
-    redirect_uri: REDIRECT_URI,
+    redirect_uri: redirectUri,
     code_challenge: challenge,
     code_challenge_method: "S256",
     state: "state-1",
@@ -207,6 +210,28 @@ test("should not accept an OAuth token as a web session", async ({
   await expect(page).toHaveURL(/\/sign-in/);
   const exported = await page.request.get("/api/export");
   expect(exported.ok()).toBe(false);
+});
+
+test("should mark an unknown app and not trust its name", async ({ page }) => {
+  await startFlow(page, {
+    name: "Claude",
+    redirectUri: "https://attacker.example/callback",
+  });
+
+  await expect(
+    page.getByRole("heading", { name: /attacker\.example/ }),
+  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Claude/ })).toBeHidden();
+  await expect(page.getByText("Unverified app")).toBeVisible();
+});
+
+test("should not warn about a known app", async ({ page }) => {
+  await startFlow(page);
+
+  await expect(
+    page.getByRole("heading", { name: /Test connector/ }),
+  ).toBeVisible();
+  await expect(page.getByText("Unverified app")).toBeHidden();
 });
 
 test("should explain a bad consent link", async ({ page }) => {

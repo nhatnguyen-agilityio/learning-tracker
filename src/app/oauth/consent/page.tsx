@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/auth/server";
 import { requireUserId } from "@/lib/auth/session";
+import { isKnownRedirect, redirectHost } from "@/lib/mcp/known-clients";
 import { allowConnection, denyConnection } from "./actions";
 
 // Every signed-in page depends on the request, so it waits for the server.
@@ -42,7 +43,9 @@ export default async function Consent({
   // Someone who already allowed this app goes straight back to it.
   if (!("authorization_id" in data)) redirect(data.redirect_url);
 
-  const client = data.client.name || t("unnamedApp");
+  const known = isKnownRedirect(data.redirect_uri);
+  const host = redirectHost(data.redirect_uri);
+  const client = known ? data.client.name || t("unnamedApp") : host;
 
   return (
     <Shell>
@@ -52,6 +55,17 @@ export default async function Consent({
       <p className="text-sm text-muted-foreground wrap-anywhere">
         {t("account", { email: data.user.email })}
       </p>
+      {known ? null : (
+        <div className="flex flex-col gap-1 rounded-lg bg-warning-soft p-3 text-sm text-warning-soft-foreground wrap-anywhere">
+          <p className="font-medium">{t("unverifiedTitle")}</p>
+          <p>
+            {data.client.name
+              ? t("unverifiedName", { name: data.client.name })
+              : null}{" "}
+            {t("unverifiedBody", { host })}
+          </p>
+        </div>
+      )}
       <div className="flex flex-col gap-2 rounded-lg border border-border bg-card p-4 text-sm">
         <p className="font-medium">{t("canTitle")}</p>
         <ul className="flex list-disc flex-col gap-1 pl-5">
@@ -76,7 +90,9 @@ export default async function Consent({
           </Button>
         </form>
         <form action={allowConnection.bind(null, authorizationId)}>
-          <Button type="submit">{t("allow")}</Button>
+          <Button type="submit" variant={known ? "default" : "secondary"}>
+            {t("allow")}
+          </Button>
         </form>
       </div>
     </Shell>

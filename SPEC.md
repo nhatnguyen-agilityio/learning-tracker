@@ -123,7 +123,7 @@ The MVP has only question-and-answer cards (markdown, code blocks). The data mod
 The app provides an MCP server so Claude can read data and create cards. The user's own Claude generates the cards, so the app does not call the Claude API.
 
 - **Endpoint:** `/api/mcp`, Streamable HTTP, running in the same codebase as the web app
-- **Auth:** OAuth 2.1 through the Supabase Auth OAuth Server, with dynamic client registration and a consent page in the app; connected apps can be disconnected in Settings. A personal API token created in Settings also works, sent through `Authorization: Bearer <token>`; stored as a hash and revocable
+- **Auth:** OAuth 2.1 through the Supabase Auth OAuth Server, with dynamic client registration and a consent page in the app. Anyone can register a client, so the page only trusts the name of a client that returns to `claude.ai`, `claude.com` or a local address; any other client is marked unverified and titled by its address. Connected apps can be disconnected in Settings. A personal API token created in Settings also works, sent through `Authorization: Bearer <token>`; stored as a hash and revocable
 - **Client:** Claude Desktop and claude.ai through a custom connector, signing in with OAuth. Claude Code and clients that can set headers can use an API token instead
 - **Scope:** each token reaches only its owner's data
 
