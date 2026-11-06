@@ -15,7 +15,13 @@ fail() {
   exit 1
 }
 
+[ -t 0 ] || fail "run this by hand in a terminal."
 [ -n "${PROD_DATABASE_URL:-}" ] || fail "PROD_DATABASE_URL is not set."
+[ -n "${PGPASSWORD:-}" ] || fail "PGPASSWORD is not set."
+# Command arguments can be seen in the process list, so the address has no password.
+case "$PROD_DATABASE_URL" in
+*://*:*@*) fail "take the password out of PROD_DATABASE_URL and put it in PGPASSWORD." ;;
+esac
 command -v docker >/dev/null || fail "Docker is needed to run pg_dump."
 docker info >/dev/null 2>&1 || fail "Docker is not running."
 
@@ -23,7 +29,6 @@ docker info >/dev/null 2>&1 || fail "Docker is not running."
 # own address here. Production leaves this unset.
 dump_url="${PG_DUMP_URL:-$PROD_DATABASE_URL}"
 
-# Everything after the @, so the password never reaches the screen.
 target="${PROD_DATABASE_URL##*@}"
 target="${target%%\?*}"
 
@@ -41,8 +46,8 @@ mkdir -p "$BACKUP_DIR"
 backup="$BACKUP_DIR/prod-$(date +%Y%m%d-%H%M%S).dump"
 
 echo "Backing up to $backup"
-# The password goes through the environment, so it isn't in the process list.
-if ! docker run --rm -e DUMP_URL="$dump_url" "$PG_IMAGE" sh -c \
+# `-e NAME` copies the value from this environment, so it stays out of the arguments.
+if ! DUMP_URL="$dump_url" docker run --rm -e DUMP_URL -e PGPASSWORD "$PG_IMAGE" sh -c \
   'exec pg_dump --format=custom --no-owner --no-privileges --schema=public --schema=auth --schema=supabase_migrations --dbname="$DUMP_URL"' \
   >"$backup"; then
   rm -f "$backup"

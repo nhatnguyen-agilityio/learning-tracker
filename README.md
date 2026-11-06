@@ -76,11 +76,12 @@ Don't edit a migration once it is merged; the next change is a new migration.
 Run this by hand before merging code into `main`. A hook stops Claude from running it. Docker must be running.
 
 ```bash
-read -rs PROD_DATABASE_URL && export PROD_DATABASE_URL
+export PROD_DATABASE_URL="<connection string without the password>"
+read -rs PGPASSWORD && export PGPASSWORD
 pnpm db:migrate:prod
 ```
 
-Paste the connection string from Supabase at the prompt, so it stays out of your shell history. If the direct connection fails, use the session pooler string.
+Take the connection string from Supabase and remove `:[YOUR-PASSWORD]`. Paste the password at the silent prompt, so it stays out of your shell history and the process list. If the direct connection fails, use the session pooler string. The command only runs in a real terminal.
 
 The command shows the database and the migrations it will apply, then asks you to type `migrate`. It backs up the `public`, `auth` and `supabase_migrations` schemas to `backups/`, which git ignores, and only then migrates. If `pg_dump` fails or the backup can't be read, it stops and changes nothing. The backups hold real user data, so keep them on your machine and delete old ones.
 
